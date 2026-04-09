@@ -1,0 +1,53 @@
+/* Colores principal para la pagina */
+* {
+    --deep-twilight: #03045eff;
+    --french-blue: #023e8aff;
+    --bright-teal-blue: #0077b6ff;
+    --blue-green: #0096c7ff;
+    --turquoise-surf: #00b4d8ff;
+    --sky-aqua: #48cae4ff;
+    --frosted-blue: #90e0efff;
+    --frosted-blue-2: #ade8f4ff;
+    --light-cyan: #caf0f8ff;
+}
+
+/* Navegacion */
+.navbar {
+    background-color: var(--french-blue);
+    padding: 20px 30px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+ul a {
+    text-decoration: none;
+    color: var(--frosted-blue);
+    padding: 10px 55px;
+}
+
+/* Slider */
+
+img {
+    filter: brightness(30%);
+}
+
+.logo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+}
+
+.carousel-item img {
+    filter: brightness(30%);
+}
+
+.logo-original {
+    filter: brightness(100%) !important;
+}
