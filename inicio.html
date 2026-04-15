@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
     <title>El Gran Pez</title>
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light">
@@ -21,24 +25,26 @@
     <main>
         <!-- Slider -->
         <div id="carouselExampleFade" class="carousel slide carousel-fade position-relative" data-bs-ride="carousel">
-            
-            <div class="position-absolute w-100 h-100 d-flex align-items-center" style="z-index: 10; pointer-events: none;">
+
+            <div class="position-absolute w-100 h-100 d-flex align-items-center"
+                style="z-index: 10; pointer-events: none;">
                 <div class="container-fluid px-5">
                     <div class="row w-100 align-items-center">
-    
+
                         <div class="col-md-7 text-center" style="pointer-events: auto;">
-                            <img src="assets/img/Logo_Pr.png" alt="Logo" 
-                                class="logo-original mb-3 img-fluid" 
+                            <img src="assets/img/Logo_Pr.png" alt="Logo" class="logo-original mb-3 img-fluid"
                                 style="max-width: 500px; width: 100%; height: auto;">
-                            
+
                             <h4 class="text-white mb-4 fs-3 fw-light"><em>"El sabor del mar en tu mesa" </em></h4>
-                            <a href="#" class="btn btn-light btn-lg px-5 py-3 fw-bold">Reserva YA!!</a>
+                            <a href="#" class="btn btn-custom btn-lg px-5 py-3 fw-bold">Reserva YA!!</a>
                         </div>
 
                         <div class="col-md-5 text-end text-white" style="pointer-events: auto;">
                             <h3 class="display-3 fw-bold">Quienes somos</h3>
                             <p class="fs-4">
-                                "Somos especialistas en la elaboración de platos con pescados y mariscos ven Visitamos y disfruta de los deliciosos platos echos con arte y dedicación, vive y comparte una experiencia agradable acompañado de la familia y amigos."
+                                "Somos especialistas en la elaboración de platos con pescados y mariscos ven Visitamos y
+                                disfruta de los deliciosos platos echos con arte y dedicación, vive y comparte una
+                                experiencia agradable acompañado de la familia y amigos."
                             </p>
                         </div>
                     </div>
@@ -47,22 +53,221 @@
 
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img src="assets/img/slider-n1.jpg" class="d-block w-100 vh-100" style="object-fit: cover;" alt="...">
+                    <img src="assets/img/slider-n1.jpg" class="d-block w-100 vh-100" style="object-fit: cover;"
+                        alt="...">
                 </div>
                 <div class="carousel-item">
-                    <img src="assets/img/slider-n2.jpg" class="d-block w-100 vh-100" style="object-fit: cover;" alt="...">
+                    <img src="assets/img/slider-n2.jpg" class="d-block w-100 vh-100" style="object-fit: cover;"
+                        alt="...">
                 </div>
             </div>
         </div>
+        <!-- Promociones -->
+        <div class="promociones">
+            <div class="container my-5">
+                <h2 class="title-pro text-center mb-4">Promociones</h2>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <img src="assets/img/maracuya-sour.webp" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Hombre en la Luna</h5>
+                                <p class="card-text">El norteamericano Neil Armstrong fue el primer hombre en pisar la
+                                    Luna.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <img src="assets/img/pisco-sour.jpg" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Presidente Kennedy</h5>
+                                <p class="card-text">John F. Kennedy presidente de EEUU en 1961, impulsorde la llegada
+                                    del hombre a la Luna. Fue
+                                    asesinado en 1963.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <img src="assets/img/piña-colada.webp" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Lider Social</h5>
+                                <p class="card-text">Martin Luther King activista por los derechos civiles fue el
+                                    portavoz y líder más visible de este movimiento desde 1955 hasta su asesinato en
+                                    1968.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <img src="assets/img/chilcanos.avif" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Antiguo Egipto</h5>
+                                <p class="card-text">El Antiguo Egipto fue una civilización milenaria gobernada por
+                                    faraones, con poder absoluto,
+                                    controlaban la religión, el ejército y la administración.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Opiniones de Google Maps -->
+        <div class="container my-5">
+            <h2 class="text-center mb-4">Opiniones en Google</h2>
+            <!-- Opinion N°1 -->
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center text-white"
+                                    style="width: 45px; height: 45px;">
+                                    A
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">Armando Gómez</h6>
+                                    <small class="text-muted">Local Guide</small>
+                                </div>
+                            </div>
+                            <div class="text-warning mb-2">
+                                <i class="bi bi-star-fill"></i> ★★★★★
+                            </div>
+                            <p class="card-text text-secondary">
+                                "El mejor ceviche que he probado en Lima. Los ingredientes se notan muy frescos y el
+                                local es impecable."
+                            </p>
+                            <small class="text-muted">Hace una semana</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- Opinion N°2 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center text-white"
+                                    style="width: 45px; height: 45px;">
+                                    A
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">Armando Gómez</h6>
+                                    <small class="text-muted">Local Guide</small>
+                                </div>
+                            </div>
+                            <div class="text-warning mb-2">
+                                <i class="bi bi-star-fill"></i> ★★★★★
+                            </div>
+                            <p class="card-text text-secondary">
+                                "El mejor ceviche que he probado en Lima. Los ingredientes se notan muy frescos y el
+                                local es impecable."
+                            </p>
+                            <small class="text-muted">Hace una semana</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- Opinion N°3 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center text-white"
+                                    style="width: 45px; height: 45px;">
+                                    A
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">Armando Gómez</h6>
+                                    <small class="text-muted">Local Guide</small>
+                                </div>
+                            </div>
+                            <div class="text-warning mb-2">
+                                <i class="bi bi-star-fill"></i> ★★★★★
+                            </div>
+                            <p class="card-text text-secondary">
+                                "El mejor ceviche que he probado en Lima. Los ingredientes se notan muy frescos y el
+                                local es impecable."
+                            </p>
+                            <small class="text-muted">Hace una semana</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Ubicacion del lugar -->
+        <section class="container-fluid p-0 mt-5 mb-6">
+
+            <div class="row g-0">
+                <div class="col-12 text-center py-3 bg-light">
+                    <h2 class="mb-0 fw-bold">Encuéntranos en</h2>
+                </div>
+            </div>
+
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="ratio ratio-21x9">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d410.13761861506293!2d-77.00157426995061!3d-12.049809911204575!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c60526e4b13b%3A0x15df13f95d6b9056!2sCEVICHERIA%20GOURMET%20REAL%20PEZ!5e0!3m2!1ses-419!2spe!4v1776235144157!5m2!1ses-419!2spe"
+                            style="border:0;" allowfullscreen="" loading="lazy">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
     <!-- Pie de pagina -->
-    <footer id="contacto">
-        <div>
-            <h4>Informacion Legal</h4>
-            <p>&copy; 2026 Mi Sitio Web, Todos los derechos reservados.</p>
-            <p><a href="">Politicas de Privacidad</a> | <a href="">Terminos de Servicio</a></p>
+    <footer class="bg-dark text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row">
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Nombre del Restaurante</h5>
+                    <p>El sabor más fresco del mar directamente a tu mesa. Pasión por la cocina marina.</p>
+                    <p class="small text-muted">© 2026 Todos los derechos reservados.</p>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Síguenos</h5>
+                    <div class="d-flex justify-content-center justify-content-md-start">
+                        <a href="https://www.facebook.com/gourmetrealpez/?locale=es_LA" class="text-white me-3 fs-4 text-decoration-none"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white me-3 fs-4 text-decoration-none"><i
+                                class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white fs-4 text-decoration-none"><i class="bi bi-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contacto</h5>
+                    <p><i class="bi bi-geo-alt-fill me-2"></i> Lima, Perú</p>
+                    <p><i class="bi bi-envelope-fill me-2"></i> info@tucevicheria.com</p>
+                    <p><i class="bi bi-telephone-fill me-2"></i> +51 999 888 777</p>
+                </div>
+
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3 text-center">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Atención al Cliente</h5>
+                    <a href="/libro-de-reclamaciones" class="text-decoration-none">
+                        <div class="bg-white p-2 rounded shadow-sm d-inline-block">
+                            <img src="assets/img/libro-reclamaciones.png"
+                                alt="Libro de Reclamaciones" style="width: 150px;">
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <hr class="mb-4 mt-5">
+
+            <div class="row align-items-center">
+                <div class="col-md-12 text-center">
+                    <p class="small text-muted">Diseñado con pasión por la gastronomía peruana.</p>
+                </div>
+            </div>
         </div>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>
