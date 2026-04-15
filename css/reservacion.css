@@ -1,0 +1,143 @@
+/* --------------- Calendario ---------- */
+
+/* Para que el calendario se vea integrado en tu caja */
+#calendar {
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: sans-serif;
+}
+
+/* Estilo para los días que no se pueden tocar (fuera del mes) */
+.fc-day-disabled {
+    background-color: #f0f0f0 !important;
+    cursor: not-allowed;
+}
+
+/* Ajuste de la barra de pasos para que se parezca a tu dibujo */
+.row.g-0.border .col-4 {
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+/* ------------- Header  ----------*/
+
+.text-primary {
+    border-bottom: 3px solid #0d6efd; /* Marca el paso actual */
+}
+
+/* BORDE NEGRO FUERTE (Estilo Paint) */
+.wizard-header, .main-wizard-box, .calendar-outer-box, .birthday-box {
+    border: 2px solid #000 !important;
+}
+
+/* CABECERA CON PASOS DIAGONALES */
+.wizard-header {
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.wizard-step {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    position: relative;
+    border-right: 2px solid #000;
+}
+
+/* Efecto de inclinación para los pasos */
+.wizard-step:not(:last-child):after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -20px;
+    width: 40px;
+    height: 100%;
+    background: #fff;
+    border-left: 2px solid #000;
+    transform: skewX(-20deg);
+    z-index: 1;
+}
+
+.wizard-step.active {
+    background-color: #f8f9fa;
+}
+
+.step-num {
+    color: red;
+    font-size: 0.8rem;
+    vertical-align: top;
+}
+
+/* TÍTULO Y CONTENIDO */
+.main-wizard-box {
+    border-top: none !important; /* Para que encaje con la cabecera */
+}
+
+.wizard-title {
+    font-size: 3rem;
+    font-family: 'Arial', sans-serif;
+    margin-bottom: 20px;
+}
+
+.calendar-info {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+/* CHECKBOX DE CUMPLEAÑOS */
+.form-check-input {
+    width: 25px;
+    height: 25px;
+    border: 2px solid #000;
+}
+
+.form-check-label {
+    font-size: 1.5rem;
+}
+
+/* AJUSTE FULLCALENDAR */
+.fc .fc-toolbar-title {
+    font-size: 1.2rem;
+    text-transform: capitalize;
+}
+
+/* Sombreado para el paso actual */
+.wizard-step.current {
+    background-color: #333 !important; /* Gris oscuro/Negro */
+    color: #fff !important;
+}
+
+.wizard-step.pending {
+    background-color: #f8f9fa;
+    color: #aaa;
+}
+
+/* Estilo para que el Modal se sienta parte de tu diseño de bordes negros */
+.modal-content {
+    border-radius: 0; /* Bordes rectos como tus dibujos */
+    box-shadow: 10px 10px 0px #000; /* Sombra sólida estilo retro/paint */
+}
+
+/* Botones dentro del modal */
+.btn-outline-dark:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+/* ----------------- Calendario - Horario no disponible------------------  */
+
+/* Estilo para los días fuera del rango (bloqueados) */
+.fc-day-disabled {
+    background-color: #e9ecef !important; /* Gris claro */
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* Estilo para el botón de inicio para que combine con tu diseño */
+.btn-light.border-dark:hover {
+    background-color: #000;
+    color: #fff;
+    transition: 0.2s;
+}
