@@ -34,22 +34,50 @@
 
     <div id="seccion-seleccionar" style="display: none;">
         <div class="main-wizard-box p-4 bg-white">
-            <h1 class="text-center wizard-title">Seleccionar</h1>
-            <div class="calendar-outer-box p-4">
-                <h4 class="text-center mb-4">¿Cuántas personas?</h4>
-                <div class="d-flex justify-content-center gap-3 mb-5">
-                    <button class="btn btn-outline-dark border-2 fw-bold px-4 py-3">1</button>
-                    <button class="btn btn-outline-dark border-2 fw-bold px-4 py-3">2</button>
-                    <button class="btn btn-outline-dark border-2 fw-bold px-4 py-3 active">4</button>
-                    <button class="btn btn-outline-dark border-2 fw-bold px-4 py-3">6+</button>
+            <div class="text-center mb-4">
+                <p class="fw-bold">¿Cuántas personas vendrán?</p>
+                <div class="d-flex justify-content-center gap-2" id="selector-personas">
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="1">1</button>
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="2">2</button>
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="4">4</button>
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="6">6</button>
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="8">8</button>
+                    <button class="btn btn-outline-dark rounded-circle btn-persona" data-cap="10">10</button>
                 </div>
-                <div class="d-flex justify-content-between mt-5">
-                    <button class="btn btn-outline-secondary border-2 fw-bold" onclick="atrasACuando()">
-                        ← REGRESAR
-                    </button>
-                    <button class="btn btn-dark border-2 fw-bold px-5" onclick="siguienteAConfirmar()">
-                        SIGUIENTE →
-                    </button>
+                <input type="hidden" id="cantidad-personas-elegida" value="">
+            </div>
+            <h1 class="text-center wizard-title">Seleccionar</h1>
+
+            <div class="d-flex border mb-3 text-center bg-light fw-bold">
+                <div class="flex-fill p-2 border-end border-dark btn-piso" onclick="cambiarPiso(1)">Piso 1</div>
+                <div class="flex-fill p-2 border-end border-dark active-piso" onclick="cambiarPiso(2)">Piso 2</div>
+                <div class="flex-fill p-2 btn-piso" onclick="cambiarPiso(3)">Piso 3</div>
+            </div>
+
+            <div class="grid-container mx-auto" id="mapa-piso-2">
+                <div class="mesa mesa-sm" style="grid-column: 4; grid-row: 2;" data-capacidad="2">1</div>
+                <div class="mesa mesa-sm" style="grid-column: 6; grid-row: 2;" data-capacidad="2">2</div>
+
+                <div class="mesa mesa-sm" style="grid-column: 4; grid-row: 4;" data-capacidad="2">3</div>
+                <div class="mesa mesa-sm" style="grid-column: 6; grid-row: 4;" data-capacidad="2">4</div>
+
+                <div class="mesa mesa-sm" style="grid-column: 4; grid-row: 6;" data-capacidad="2">5</div>
+                <div class="mesa mesa-sm" style="grid-column: 6; grid-row: 6;" data-capacidad="2">6</div>
+
+                <div class="mesa mesa-md" style="grid-column: 7 / span 2; grid-row: 8;" data-capacidad="4">7</div>
+                <div class="mesa mesa-md" style="grid-column: 7 / span 2; grid-row: 10;" data-capacidad="4">9</div>
+                <div class="mesa mesa-md" style="grid-column: 7 / span 2; grid-row: 12;" data-capacidad="4">11</div>
+                <div class="mesa mesa-md" style="grid-column: 7 / span 2; grid-row: 14;" data-capacidad="4">14</div>
+
+                <div class="mesa mesa-sm" style="grid-column: 10; grid-row: 9;" data-capacidad="2">8</div>
+                <div class="mesa mesa-sm" style="grid-column: 10; grid-row: 11;" data-capacidad="2">10</div>
+                <div class="mesa mesa-sm" style="grid-column: 10; grid-row: 13;" data-capacidad="2">12</div>
+                <div class="mesa mesa-sm" style="grid-column: 10; grid-row: 15;" data-capacidad="2">15</div>
+
+                <div class="mesa mesa-lg" style="grid-column: 3 / span 3; grid-row: 14;" data-capacidad="6">13</div>
+
+                <div class="escalera-grid" style="grid-column: 2 / span 2; grid-row: 9 / span 3;">
+                    Escalera
                 </div>
             </div>
         </div>
@@ -64,11 +92,13 @@
                 </div>
                 <div class="modal-body">
                     <label class="fw-bold mb-2">Selecciona la hora:</label>
-                    <div class="d-flex flex-wrap gap-2 mb-4">
-                        <button class="btn btn-outline-dark btn-sm rounded-pill">12:30 PM</button>
-                        <button class="btn btn-outline-dark btn-sm rounded-pill">1:30 PM</button>
-                        <button class="btn btn-outline-dark btn-sm rounded-pill">2:30 PM</button>
+                    <div class="d-flex flex-wrap gap-2 mb-4" id="contenedor-horas">
+                        <button type="button" class="btn btn-outline-dark btn-sm rounded-pill btn-hora">12:30
+                            PM</button>
+                        <button type="button" class="btn btn-outline-dark btn-sm rounded-pill btn-hora">1:30 PM</button>
+                        <button type="button" class="btn btn-outline-dark btn-sm rounded-pill btn-hora">2:30 PM</button>
                     </div>
+                    <input type="hidden" id="hora-seleccionada">
                     <label class="fw-bold mb-2">Ubicación de la mesa:</label>
                     <select class="form-select border-dark mb-4">
                         <option value="pisos">Mesas en salón (Pisos generales)</option>
@@ -83,6 +113,93 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary px-4" onclick="irASeleccionar()">Siguiente</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-5">
+        <button class="btn btn-outline-secondary border-2 fw-bold" onclick="atrasACuando()">
+            ← REGRESAR
+        </button>
+        <button class="btn btn-dark border-2 fw-bold px-5" onclick="siguienteAConfirmar()">
+            SIGUIENTE →
+        </button>
+    </div>
+
+    <div class="modal fade" id="modalConfirmarMesa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-dark border-2">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Confirmar Selección</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <p class="fs-5">Estás seleccionando la <strong>Mesa <span id="nro-mesa-modal"></span></strong></p>
+                    <p class="text-muted">¿Estás seguro de que deseas elegir este lugar para tu reserva?</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4"
+                        data-bs-dismiss="modal">CANCELAR</button>
+                    <button type="button" class="btn btn-dark px-4" id="btn-aceptar-mesa">SÍ, ESTOY SEGURO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="seccion-confirmar" style="display: none;">
+        <div class="main-wizard-box p-4 bg-white">
+            <h1 class="text-center wizard-title mb-2">Confirmar Reserva</h1>
+
+            <div class="text-center mb-4">
+                <p class="fw-bold mb-0">¡Muchas gracias por elegirnos para tu reserva!</p>
+                <p class="text-muted small">Estamos felices de recibirte y brindarte la mejor experiencia.</p>
+            </div>
+
+            <div class="card border-dark border-2 mx-auto shadow-sm" style="max-width: 550px;">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom border-dark pb-2 mb-3 text-center">Resumen de tu visita</h5>
+
+                    <ul class="list-unstyled">
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="me-2">📅</span>
+                            <strong>Fecha y Hora:</strong>
+                            <span id="resumen-fecha-hora" class="ms-2">--/--/-- a las --:--</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="me-2">📍</span>
+                            <strong>Ubicación:</strong>
+                            <span id="resumen-piso" class="ms-2">Piso --</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="me-2">👥</span>
+                            <strong>Personas:</strong>
+                            <span id="resumen-personas" class="ms-2">0 personas</span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <span class="me-2">🪑</span>
+                            <strong>Mesa seleccionada:</strong>
+                            <span id="resumen-mesa" class="badge bg-dark ms-2">Ninguna</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert alert-light border text-center py-3 mt-3 mb-0"
+                        style="font-size: 0.95rem; background-color: #f8f9fa;">
+                        <p class="mb-1"><strong>Nota importante:</strong></p>
+                        <p class="mb-2">Su mesa quedará reservada por 15 minutos de tolerancia.</p>
+                        <hr class="my-2">
+                        <p class="mb-0 text-primary fw-bold">En breves momentos lo llamaremos para indicarle los pasos a
+                            seguir con el pago de su reserva.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-5">
+                <button class="btn btn-outline-secondary border-2 fw-bold" onclick="atrasASeleccionar()">
+                    ← CORREGIR MESA
+                </button>
+                <button class="btn btn-success border-2 fw-bold px-5 py-2" onclick="finalizarReserva()">
+                    CONFIRMAR Y FINALIZAR
+                </button>
             </div>
         </div>
     </div>

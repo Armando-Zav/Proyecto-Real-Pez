@@ -141,3 +141,131 @@
     color: #fff;
     transition: 0.2s;
 }
+
+/* Boton de seleccion de hora */
+
+/* Clase para resaltar la hora seleccionada */
+.btn-active-hora {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 2px solid #000 !important;
+    font-weight: bold;
+}
+
+/* Estilo de las mesas  */
+
+.grid-container {
+    display: grid;
+    /* 11 columnas de 50px cada una */
+    grid-template-columns: repeat(11, 50px);
+    /* 16 filas de 50px cada una */
+    grid-template-rows: repeat(16, 50px);
+    
+    gap: 2px; /* Espacio entre cuadros */
+    border: 3px solid #000;
+    background-color: #fff;
+    width: fit-content;
+    padding: 5px;
+    position: relative;
+}
+
+/* Dibujar la cuadrícula de fondo para guiarte */
+.grid-container::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(to right, #ddd 1px, transparent 1px),
+        linear-gradient(to bottom, #ddd 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.mesa {
+    z-index: 1;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.mesa:hover { background: #e0f0ff; }
+
+.mesa-disponible.active {
+    background: #000;
+    color: #fff;
+}
+
+/* Estilo para la escalera roja de tu dibujo */
+.escalera-grid {
+    border: 2px solid red;
+    color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #fff5f5;
+}
+
+/* Mesa apta para el número de personas */
+.mesa-disponible {
+    border: 2px solid #000;
+    background-color: #fff;
+    cursor: pointer;
+    opacity: 1;
+}
+
+/* Mesa que NO es compatible (Se pone gris) */
+.mesa-bloqueada {
+    background-color: #f0f0f0 !important;
+    color: #ccc !important;
+    border-color: #ddd !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Mesa seleccionada actualmente */
+.mesa-seleccionada {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+/* Cuando el usuario hace clic en una mesa apta */
+.mesa-seleccionada {
+    background-color: #000 !important; /* Negro sólido */
+    color: #fff !important;            /* Texto blanco */
+    border: 3px solid #000;
+    transform: scale(1.05);           /* Se agranda un poquito */
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* Confirmacion de la reserva */
+
+/* El paso en el que te encuentras actualmente */
+.wizard-step.current {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+/* Los pasos que ya pasaron o están pendientes */
+.wizard-step.pending {
+    background-color: #f8f9fa;
+    color: #ccc;
+}
+
+.text-primary {
+    color: #0d6efd !important; /* Un azul suave para que el cliente lo note */
+}
+
+.alert-light {
+    border-radius: 8px;
+    border-left: 5px solid #000 !important; /* Un detalle elegante */
+}
