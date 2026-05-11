@@ -32,10 +32,16 @@ body {
 
 /* Navegacion */
 .navbar {
-    background: rgba(2, 62, 138, 0.88);
+    background: linear-gradient(180deg, #031a35 0%, #022843 100%);;
     padding: 18px 30px;
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.22);
     backdrop-filter: blur(12px);
+}
+
+.navbar-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
 }
 
 ul {
@@ -78,6 +84,19 @@ ul a:focus-visible {
     filter: brightness(0.7);
 }
 
+.carousel-overlay {
+    z-index: 10;
+    pointer-events: none;
+}
+
+.carousel-content-interactive {
+    pointer-events: auto;
+}
+
+.carousel-img {
+    object-fit: cover;
+}
+
 .position-absolute.w-100.h-100.d-flex.align-items-center {
     z-index: 2;
 }
@@ -88,9 +107,24 @@ ul a:focus-visible {
 }
 
 .logo-original {
+    max-width: 500px;
     max-width: 420px;
     width: 100%;
+    height: auto;
     filter: brightness(1);
+}
+
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+}
+
+.reclamaciones-img {
+    width: 150px;
+}
+
+.maps-iframe {
+    border: 0;
 }
 
 .hero-cta {
@@ -202,6 +236,33 @@ section.container-fluid.p-0.mt-5.mb-6 {
     filter: saturate(1.05) contrast(1.02);
 }
 
+/* Ubicacion del lugar */
+.head-map {
+    background: linear-gradient(180deg, #031a35 0%, #022843 100%);;
+}
+
+/* Footer */
+footer.bg-dark {
+    background: linear-gradient(180deg, #031a35 0%, #022843 100%);
+}
+
+footer .text-warning {
+    color: var(--turquoise-surf) !important;
+}
+
+footer p,
+footer small {
+    color: #b8cbd9;
+}
+
+footer .bg-white {
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+footer .bi {
+    vertical-align: -.125em;
+}
+
 /* Responsive */
 @media (max-width: 991.98px) {
     .navbar {
@@ -277,26 +338,4 @@ section.container-fluid.p-0.mt-5.mb-6 {
         height: auto;
         aspect-ratio: 4 / 3;
     }
-}
-
-/* Footer */
-footer.bg-dark {
-    background: linear-gradient(180deg, #031a35 0%, #022843 100%);
-}
-
-footer .text-warning {
-    color: var(--turquoise-surf) !important;
-}
-
-footer p,
-footer small {
-    color: #b8cbd9;
-}
-
-footer .bg-white {
-    background: rgba(255, 255, 255, 0.95) !important;
-}
-
-footer .bi {
-    vertical-align: -.125em;
 }
