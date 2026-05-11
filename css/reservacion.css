@@ -1,203 +1,607 @@
-/* --------------- Calendario ---------- */
+/* ===========================================
+   RESERVACIÓN - ESTILOS MODERNOS
+   =========================================== */
 
-/* Para que el calendario se vea integrado en tu caja */
-#calendar {
-    max-width: 100%;
+:root {
+    --primary-gradient: linear-gradient(135deg, #007bff 0%, #00d4ff 100%);
+    --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    --shadow-light: 0 2px 10px rgba(0, 123, 255, 0.1);
+    --shadow-medium: 0 4px 20px rgba(0, 123, 255, 0.15);
+    --shadow-strong: 0 8px 30px rgba(0, 123, 255, 0.2);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===========================================
+   WIZARD PROGRESS
+   =========================================== */
+
+.wizard-progress {
+    margin-bottom: 2rem;
+}
+
+.wizard-steps {
+    position: relative;
+    max-width: 600px;
     margin: 0 auto;
-    font-family: sans-serif;
-}
-
-/* Estilo para los días que no se pueden tocar (fuera del mes) */
-.fc-day-disabled {
-    background-color: #f0f0f0 !important;
-    cursor: not-allowed;
-}
-
-/* Ajuste de la barra de pasos para que se parezca a tu dibujo */
-.row.g-0.border .col-4 {
-    transition: 0.3s;
-    font-size: 0.9rem;
-}
-
-/* ------------- Header  ----------*/
-
-.text-primary {
-    border-bottom: 3px solid #0d6efd; /* Marca el paso actual */
-}
-
-/* BORDE NEGRO FUERTE (Estilo Paint) */
-.wizard-header, .main-wizard-box, .calendar-outer-box, .birthday-box {
-    border: 2px solid #000 !important;
-}
-
-/* CABECERA CON PASOS DIAGONALES */
-.wizard-header {
-    background-color: #fff;
-    overflow: hidden;
 }
 
 .wizard-step {
-    flex: 1;
-    padding: 15px;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
     position: relative;
-    border-right: 2px solid #000;
+    z-index: 2;
+    transition: var(--transition);
 }
 
-/* Efecto de inclinación para los pasos */
-.wizard-step:not(:last-child):after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: -20px;
-    width: 40px;
-    height: 100%;
-    background: #fff;
-    border-left: 2px solid #000;
-    transform: skewX(-20deg);
-    z-index: 1;
-}
-
-.wizard-step.active {
-    background-color: #f8f9fa;
-}
-
-.step-num {
-    color: red;
-    font-size: 0.8rem;
-    vertical-align: top;
-}
-
-/* TÍTULO Y CONTENIDO */
-.main-wizard-box {
-    border-top: none !important; /* Para que encaje con la cabecera */
-}
-
-.wizard-title {
-    font-size: 3rem;
-    font-family: 'Arial', sans-serif;
-    margin-bottom: 20px;
-}
-
-.calendar-info {
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-/* CHECKBOX DE CUMPLEAÑOS */
-.form-check-input {
-    width: 25px;
-    height: 25px;
-    border: 2px solid #000;
-}
-
-.form-check-label {
-    font-size: 1.5rem;
-}
-
-/* AJUSTE FULLCALENDAR */
-.fc .fc-toolbar-title {
-    font-size: 1.2rem;
-    text-transform: capitalize;
-}
-
-/* Sombreado para el paso actual */
-.wizard-step.current {
-    background-color: #333 !important; /* Gris oscuro/Negro */
-    color: #fff !important;
-}
-
-.wizard-step.pending {
-    background-color: #f8f9fa;
-    color: #aaa;
-}
-
-/* Estilo para que el Modal se sienta parte de tu diseño de bordes negros */
-.modal-content {
-    border-radius: 0; /* Bordes rectos como tus dibujos */
-    box-shadow: 10px 10px 0px #000; /* Sombra sólida estilo retro/paint */
-}
-
-/* Botones dentro del modal */
-.btn-outline-dark:hover {
-    background-color: #000;
-    color: #fff;
-}
-
-/* ----------------- Calendario - Horario no disponible------------------  */
-
-/* Estilo para los días fuera del rango (bloqueados) */
-.fc-day-disabled {
-    background-color: #e9ecef !important; /* Gris claro */
-    cursor: not-allowed !important;
-    opacity: 0.6;
-}
-
-/* Estilo para el botón de inicio para que combine con tu diseño */
-.btn-light.border-dark:hover {
-    background-color: #000;
-    color: #fff;
-    transition: 0.2s;
-}
-
-/* Boton de seleccion de hora */
-
-/* Clase para resaltar la hora seleccionada */
-.btn-active-hora {
-    background-color: #000 !important;
-    color: #fff !important;
-    border: 2px solid #000 !important;
-    font-weight: bold;
-}
-
-/* Estilo de las mesas  */
-
-.grid-container {
-    display: grid;
-    /* 11 columnas de 50px cada una */
-    grid-template-columns: repeat(11, 50px);
-    /* 16 filas de 50px cada una */
-    grid-template-rows: repeat(16, 50px);
-    
-    gap: 2px; /* Espacio entre cuadros */
-    border: 3px solid #000;
-    background-color: #fff;
-    width: fit-content;
-    padding: 5px;
-    position: relative;
-}
-
-/* Dibujar la cuadrícula de fondo para guiarte */
-.grid-container::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: 
-        linear-gradient(to right, #ddd 1px, transparent 1px),
-        linear-gradient(to bottom, #ddd 1px, transparent 1px);
-    background-size: 50px 50px;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.mesa {
-    z-index: 1;
-    border: 2px solid #000;
+.step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--secondary-gradient);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    background: #fff;
-    cursor: pointer;
-    transition: 0.2s;
+    font-size: 1.1rem;
+    border: 3px solid #e9ecef;
+    transition: var(--transition);
 }
 
-.mesa:hover { background: #e0f0ff; }
+.step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-align: center;
+    transition: var(--transition);
+}
 
-.mesa-disponible.active {
-    background: #000;
+.wizard-step.active .step-number {
+    background: var(--primary-gradient);
+    border-color: #007bff;
+    transform: scale(1.1);
+}
+
+.wizard-step.active .step-label {
+    color: #007bff;
+    font-weight: 700;
+}
+
+.wizard-step.completed .step-number {
+    background: var(--success-gradient);
+    border-color: #28a745;
+}
+
+.wizard-step.completed .step-label {
+    color: #28a745;
+}
+
+.wizard-connector {
+    flex: 1;
+    height: 3px;
+    background: #e9ecef;
+    margin: 0 1rem;
+    margin-top: -25px;
+    position: relative;
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.wizard-step.active ~ .wizard-connector {
+    background: var(--primary-gradient);
+}
+
+.wizard-step.completed ~ .wizard-connector {
+    background: var(--success-gradient);
+}
+
+/* ===========================================
+   WIZARD CONTENT
+   =========================================== */
+
+.wizard-content {
+    min-height: 400px;
+}
+
+.wizard-step-content {
+    display: none;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.wizard-step-content.active {
+    display: block;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===========================================
+   CARDS
+   =========================================== */
+
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* ===========================================
+   CALENDAR
+   =========================================== */
+
+.calendar-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+#calendar {
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: inherit;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.fc {
+    border-radius: var(--border-radius);
+}
+
+.fc-header-toolbar {
+    padding: 1rem;
+    margin-bottom: 0 !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #495057;
+}
+
+.fc-button {
+    border-radius: 8px !important;
+    border: 2px solid #dee2e6 !important;
+    background: white !important;
+    color: #495057 !important;
+    font-weight: 600 !important;
+    transition: var(--transition) !important;
+}
+
+.fc-button:hover {
+    background: var(--primary-gradient) !important;
+    border-color: #007bff !important;
+    color: white !important;
+    transform: translateY(-1px);
+}
+
+.fc-button-active {
+    background: var(--primary-gradient) !important;
+    border-color: #007bff !important;
+    color: white !important;
+}
+
+.fc-daygrid-day {
+    transition: var(--transition);
+}
+
+.fc-daygrid-day:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+.fc-day-disabled {
+    background-color: #f8f9fa !important;
+    color: #adb5bd !important;
+    cursor: not-allowed;
+}
+
+/* ===========================================
+   SELECTORES
+   =========================================== */
+
+.personas-selector, .piso-selector {
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.personas-selector h5, .piso-selector h5 {
+    color: #495057;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.btn-persona, .btn-piso {
+    min-width: 60px;
+    height: 60px;
+    border-radius: 50% !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    border: 2px solid #dee2e6;
+}
+
+.btn-persona:hover, .btn-piso:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-persona.active, .btn-piso.active {
+    background: var(--primary-gradient) !important;
+    border-color: #007bff !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+.btn-piso {
+    min-width: 120px;
+    height: 50px;
+    border-radius: 25px !important;
+}
+
+/* ===========================================
+   MAPA DE MESAS
+   =========================================== */
+
+.mesas-container {
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+}
+
+.mesas-container h5 {
+    color: #495057;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.mesas-grid-wrapper {
+    overflow-x: auto;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(11, 45px);
+    grid-template-rows: repeat(16, 45px);
+    gap: 3px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    margin: 0 auto;
+    position: relative;
+    min-width: 550px;
+}
+
+.grid-container::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    background-image:
+        linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    border-radius: var(--border-radius);
+}
+
+.mesa {
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    z-index: 2;
+}
+
+.mesa:hover {
+    background: #e3f2fd;
+    border-color: #007bff;
+    transform: scale(1.05);
+}
+
+.mesa.selected {
+    background: var(--primary-gradient);
+    border-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: var(--shadow-medium);
+}
+
+.mesa.mesa-sm {
+    /* Para 2 personas - tamaño pequeño */
+}
+
+.mesa.mesa-md {
+    /* Para 4 personas - tamaño mediano */
+}
+
+.mesa.mesa-lg {
+    /* Para 6+ personas - tamaño grande */
+}
+
+.escalera-grid {
+    background: #6c757d;
+    color: white;
+    border: 2px solid #495057;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* ===========================================
+   RESUMEN DE RESERVA
+   =========================================== */
+
+.resumen-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-light);
+}
+
+.resumen-card h5 {
+    color: #495057;
+    font-weight: 700;
+    border-color: #dee2e6 !important;
+}
+
+.resumen-item {
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: var(--transition);
+}
+
+.resumen-item:hover {
+    background: #e9ecef;
+}
+
+.resumen-item i {
+    font-size: 1.2rem;
+}
+
+.success-icon {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===========================================
+   NAVEGACIÓN
+   =========================================== */
+
+.wizard-navigation {
+    margin-top: 2rem;
+}
+
+.wizard-navigation .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: var(--transition);
+    border: 2px solid;
+}
+
+.wizard-navigation .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+#btn-prev {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+#btn-prev:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+#btn-next {
+    background: var(--primary-gradient);
+    border-color: #007bff;
+    color: white;
+}
+
+#btn-next:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #0099cc 100%);
+    border-color: #0056b3;
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+   =========================================== */
+
+@media (max-width: 768px) {
+    .wizard-steps {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .wizard-connector {
+        display: none;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(11, 35px);
+        grid-template-rows: repeat(16, 35px);
+        min-width: 420px;
+    }
+
+    .mesa {
+        font-size: 0.8rem;
+    }
+
+    .btn-persona, .btn-piso {
+        min-width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+
+    .wizard-navigation .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .wizard-progress {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .personas-selector, .piso-selector, .mesas-container {
+        padding: 1rem;
+    }
+
+    .mesas-grid-wrapper {
+        padding: 0.5rem;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(11, 30px);
+        grid-template-rows: repeat(16, 30px);
+        min-width: 360px;
+        padding: 5px;
+    }
+
+    .mesa {
+        font-size: 0.7rem;
+        border-width: 1px;
+    }
+
+    .resumen-card {
+        padding: 1.5rem;
+    }
+
+    .wizard-navigation {
+        margin-top: 1.5rem;
+    }
+}
+
+/* ===========================================
+   ANIMACIONES Y TRANSICIONES
+   =========================================== */
+
+.wizard-step-content {
+    animation: slideInRight 0.4s ease-out;
+}
+
+.wizard-step-content.active {
+    animation: slideInRight 0.4s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Hover effects para mejor UX */
+.btn, .mesa, .card {
+    transition: var(--transition);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Focus states para accesibilidad */
+.btn:focus, .mesa:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
     color: #fff;
 }
 
