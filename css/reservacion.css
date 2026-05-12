@@ -5,7 +5,6 @@
 :root {
     --primary-gradient: linear-gradient(135deg, #007bff 0%, #00d4ff 100%);
     --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
-    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     --shadow-light: 0 2px 10px rgba(0, 123, 255, 0.1);
     --shadow-medium: 0 4px 20px rgba(0, 123, 255, 0.15);
     --shadow-strong: 0 8px 30px rgba(0, 123, 255, 0.2);
@@ -72,7 +71,7 @@
 }
 
 .wizard-step.completed .step-number {
-    background: var(--success-gradient);
+    background: #42b948;
     border-color: #28a745;
 }
 
@@ -83,16 +82,11 @@
 .wizard-connector {
     flex: 1;
     height: 3px;
-    background: #e9ecef;
     margin: 0 1rem;
     margin-top: -25px;
     position: relative;
     z-index: 1;
     transition: var(--transition);
-}
-
-.wizard-step.active ~ .wizard-connector {
-    background: var(--primary-gradient);
 }
 
 .wizard-step.completed ~ .wizard-connector {
@@ -353,18 +347,6 @@
     box-shadow: var(--shadow-medium);
 }
 
-.mesa.mesa-sm {
-    /* Para 2 personas - tamaño pequeño */
-}
-
-.mesa.mesa-md {
-    /* Para 4 personas - tamaño mediano */
-}
-
-.mesa.mesa-lg {
-    /* Para 6+ personas - tamaño grande */
-}
-
 .escalera-grid {
     background: #6c757d;
     color: white;
@@ -454,8 +436,8 @@
 }
 
 #btn-prev {
-    border-color: #6c757d;
-    color: #6c757d;
+    border-color: #ffffff;
+    color: #ffffff;
 }
 
 #btn-prev:hover {
