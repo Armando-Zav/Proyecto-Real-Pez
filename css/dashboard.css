@@ -1,0 +1,198 @@
+/* Variables - Paleta de colores principal integrada (de tu CSS previo) */
+:root {
+    --deep-twilight: #03045eff;
+    --french-blue: #023e8aff;
+    --bright-teal-blue: #0077b6ff;
+    --blue-green: #0096c7ff;
+    --turquoise-surf: #00b4d8ff;
+    --sky-aqua: #48cae4ff;
+    --frosted-blue: #90e0efff;
+    --frosted-blue-2: #ade8f4ff;
+    --light-cyan: #caf0f8ff;
+    
+    /* Colores extraídos del diseño de la tabla */
+    --bg-light-gray: #f2f6f9;
+    --sidebar-dark: #121e26;
+    --status-green: #14b8a6;
+    --status-orange: #f59e0b;
+    --status-red: #ef4444;
+}
+
+/* Tipografía y fondo general */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #334155;
+}
+.bg-light-gray { background-color: var(--bg-light-gray); }
+
+/* BARRA LATERAL (SIDEBAR) */
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-dark);
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+.main-content {
+    margin-left: 250px; /* Para empujar el contenido principal */
+}
+
+.logo-box {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(20, 184, 166, 0.1);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    border-radius: 8px;
+    color: var(--status-green);
+}
+
+.sidebar .nav-link {
+    color: color-mix(in srgb, #fff 70%, transparent);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.sidebar .nav-link.active {
+    background-color: rgba(20, 184, 166, 0.15);
+    color: #fff !important;
+}
+.sidebar .nav-link.active i {
+    color: var(--status-green);
+}
+
+/* CABECERA PRINCIPAL */
+.main-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    background-color: #e2e8f0;
+    color: #475569;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* TARJETAS KPI */
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+/* Colores de icono recreados */
+.icon-blue { background-color: rgba(0, 119, 182, 0.08); color: var(--bright-teal-blue); }
+.icon-orange { background-color: rgba(245, 158, 11, 0.08); color: var(--status-orange); }
+.icon-green { background-color: rgba(20, 184, 166, 0.08); color: var(--status-green); }
+.icon-light-blue { background-color: rgba(72, 202, 228, 0.08); color: var(--sky-aqua); }
+
+/* BARRA DE CONTROLES */
+.control-bar {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+.search-group { width: 400px; }
+.search-group i { font-size: 0.9rem; }
+.control-bar .form-control, .control-bar .form-select {
+    border-color: #e2e8f0;
+}
+.date-input { width: 150px; color-scheme: light; }
+
+/* TABLA DE RESERVAS */
+.table-section {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+.table thead th {
+    letter-spacing: 0.03em;
+    color: #94a3b8;
+    background-color: transparent !important;
+}
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(242, 246, 249, 0.5);
+}
+
+/* ETIQUETAS DE ESTADO (CONFIRMADA, PENDIENTE, CANCELADA) */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+.badge-status.confirmed {
+    background-color: rgba(20, 184, 166, 0.1);
+    color: var(--status-green);
+    border: 1px solid rgba(20, 184, 166, 0.2);
+}
+.badge-status.pending {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--status-orange);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.badge-status.cancelled {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--status-red);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ICONOS DE ACCIÓN */
+.action-btn {
+    border: none;
+    background: transparent;
+    padding: 4px;
+    color: #94a3b8;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+.action-btn:hover { color: var(--blue-green); }
+.action-btn.icon-check:hover { color: var(--status-green); }
+.action-btn.icon-cancel:hover { color: var(--status-red); }
+
+/* UTILIDADES EXTRAS Y FLOTANTES */
+.extra-small { font-size: 0.75rem; }
+.dropdown-menu-item {
+    font-weight: 500;
+    transition: background 0.1s ease;
+}
+
+.help-icon-floating {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    background-color: var(--status-green);
+    border-radius: 50%;
+    z-index: 1001;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+}

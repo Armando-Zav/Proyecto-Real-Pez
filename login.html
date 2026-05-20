@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gran Pez - Portal de Administración</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body class="login-bg d-flex align-items-center justify-content-center min-vh-100">
+
+    <div class="login-container text-center p-4">
+
+        <div class="mb-3 mx-auto d-flex align-items-center justify-content-center">
+            <img src="assets/img/Logo_Pr.png" alt="Logo El Gran Pez" class="login-brand-img">
+        </div>
+
+        <p class="h-admin small mb-4 fw-bold">Portal de Administración</p>
+
+        <div class="login-card p-4 text-start">
+            <h3 class="text-white h5 mb-4">Iniciar sesión</h3>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-light small">Usuario</label>
+                    <input type="text" class="form-control login-input" id="username" placeholder="admin" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-light small">Contraseña</label>
+                    <input type="password" class="form-control login-input" id="password" placeholder="********"
+                        required>
+                </div>
+
+                <div id="errorMessage" class="alert alert-danger d-none py-2 small text-center login-error-alert"></div>
+
+                <button type="submit" class="btn btn-submit w-100 py-2">Ingresar</button>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
