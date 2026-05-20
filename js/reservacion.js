@@ -9,9 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     inicializarModalFecha();
 });
 
-/* ===========================================
-   DATOS DE RESERVA
-   =========================================== */
+/* Variables para el control del wizard y reserva */
 let pasoActual = 1;
 let modalFecha; // Instancia global del modal
 let datosReserva = {
@@ -23,6 +21,7 @@ let datosReserva = {
     terrazaConfirmada: false,
     piso: 1,
     mesa: null,
+    /* Datos del cliente en JSON*/
     cliente: {
         nombre: '',
         telefono: '',
@@ -31,9 +30,7 @@ let datosReserva = {
     }
 };
 
-/* ===========================================
-   CONFIGURACIÓN DE MESAS POR PISO
-   =========================================== */
+/* Configuracion de mesas disponibles por piso */
 const mesasDisponiblesPorPiso = {
     1: { // Piso 1
         1: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
@@ -43,7 +40,7 @@ const mesasDisponiblesPorPiso = {
         8: [13],
         10: []
     },
-    2: { // Piso 2 - Se rellenará cuando se defina
+    2: { // Piso 2
         1: [],
         2: [],
         4: [],
@@ -51,7 +48,7 @@ const mesasDisponiblesPorPiso = {
         8: [],
         10: []
     },
-    3: { // Piso 3 - Se rellenará cuando se defina
+    3: { // Piso 3
         1: [],
         2: [],
         4: [],
@@ -61,9 +58,7 @@ const mesasDisponiblesPorPiso = {
     }
 };
 
-/* ===========================================
-   CALENDARIO
-   =========================================== */
+/* CALENDARIO */
 function inicializarCalendario() {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) {

@@ -1,7 +1,4 @@
-/* ===========================================
-   RESERVACIÓN - ESTILOS MODERNOS
-   =========================================== */
-
+/* Variables - Paleta de colores principal */
 :root {
     --primary-gradient: linear-gradient(135deg, #007bff 0%, #00d4ff 100%);
     --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
@@ -12,9 +9,7 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ===========================================
-   WIZARD PROGRESS
-   =========================================== */
+/* WIZARD PROGRESS */
 
 .wizard-progress {
     margin-bottom: 2rem;
@@ -93,9 +88,7 @@
     background: var(--success-gradient);
 }
 
-/* ===========================================
-   WIZARD CONTENT
-   =========================================== */
+/* WIZARD CONTENT */
 
 .wizard-content {
     min-height: 400px;
@@ -121,9 +114,7 @@
     }
 }
 
-/* ===========================================
-   CARDS
-   =========================================== */
+/* CARDS  */
 
 .card {
     border: none;
@@ -147,9 +138,7 @@
     padding: 2rem;
 }
 
-/* ===========================================
-   CALENDAR
-   =========================================== */
+/* CALENDAR */
 
 .calendar-container {
     max-width: 100%;
@@ -221,9 +210,7 @@
     cursor: not-allowed;
 }
 
-/* ===========================================
-   SELECTORES
-   =========================================== */
+/* SELECTORES  */
 
 .personas-selector, .piso-selector {
     background: #f8f9fa;
@@ -266,9 +253,7 @@
     border-radius: 25px !important;
 }
 
-/* ===========================================
-   MAPA DE MESAS
-   =========================================== */
+/* MAPA DE MESAS  */
 
 .mesas-container {
     background: #f8f9fa;
@@ -360,9 +345,7 @@
     z-index: 2;
 }
 
-/* ===========================================
-   RESUMEN DE RESERVA
-   =========================================== */
+/* RESUMEN DE RESERVA  */
 
 .resumen-card {
     background: white;
@@ -414,9 +397,7 @@
     }
 }
 
-/* ===========================================
-   NAVEGACIÓN
-   =========================================== */
+/* NAVEGACIÓN */
 
 .wizard-navigation {
     margin-top: 2rem;
@@ -456,9 +437,7 @@
     border-color: #0056b3;
 }
 
-/* ===========================================
-   RESPONSIVE DESIGN
-   =========================================== */
+/* RESPONSIVE DESIGN  */
 
 @media (max-width: 768px) {
     .wizard-steps {
@@ -548,9 +527,7 @@
     }
 }
 
-/* ===========================================
-   ANIMACIONES Y TRANSICIONES
-   =========================================== */
+/* ANIMACIONES Y TRANSICIONES */
 
 .wizard-step-content {
     animation: slideInRight 0.4s ease-out;
