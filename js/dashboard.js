@@ -246,6 +246,113 @@ document.addEventListener('DOMContentLoaded', () => {
         const miModal = new bootstrap.Modal(modalElement);
         miModal.show();
     };
+
+    /* Reserva manual desde el Admin */
+
+    // 1. Mostrar/Ocultar el campo "Piso" condicionalmente en el formulario de registro
+    const regTipoMesa = document.getElementById('regTipoMesa');
+    const filaPisoMesa = document.getElementById('filaPisoMesa'); // 👈 Controla toda la fila (Piso y Mesa)
+    const regMesa = document.getElementById('regMesa');           // 👈 Controla el input de mesa
+    const regPersonas = document.getElementById('regPersonas');
+    const personasHelp = document.getElementById('personasHelp');
+
+    if (regTipoMesa && filaPisoMesa && regMesa && regPersonas) {
+        regTipoMesa.addEventListener('change', () => {
+
+            if (regTipoMesa.value === 'Terraza') {
+                // 🌴 REGLAS PARA TERRAZA
+                filaPisoMesa.classList.add('d-none');    // Oculta la fila de Piso y Mesa por completo
+                regMesa.removeAttribute('required');     // 🔴 CRÍTICO: Quita el "obligatorio" para que deje guardar
+                regMesa.value = 'Terraza Completa';      // Texto automático que se enviará a tu base de datos
+
+                regPersonas.max = 22;                    // Límite de la terraza
+                if (personasHelp) {
+                    personasHelp.textContent = 'Máx. 22 personas para Terraza (Espacio Privado)';
+                }
+
+            } else {
+                // 🪑 REGLAS PARA MESA NORMAL
+                filaPisoMesa.classList.remove('d-none'); // Vuelve a mostrar Piso y Mesa
+                regMesa.setAttribute('required', '');    // 🟢 Vuelve a exigir que digiten la mesa
+                regMesa.value = '';                      // Limpia el campo para que el Admin escriba
+
+                regPersonas.max = 10;                    // Límite de mesa normal
+                if (personasHelp) {
+                    personasHelp.textContent = 'Máx. 10 personas para Mesa Normal';
+                }
+
+                // Si excedía el límite de 10 al cambiar, lo reseteamos a 10
+                if (parseInt(regPersonas.value) > 10) {
+                    regPersonas.value = 10;
+                }
+            }
+        });
+    }
+
+    // 2. Capturar el envío del Formulario Manual
+    const formNuevaReserva = document.getElementById('formNuevaReserva');
+    if (formNuevaReserva) {
+        formNuevaReserva.addEventListener('submit', function (e) {
+            e.preventDefault(); // Evita que la página se recargue
+
+            // Armamos el objeto con la misma estructura exacta que espera tu servidor Node
+            const nuevaReserva = {
+                fecha: document.getElementById('regFecha').value,
+                hora: document.getElementById('regHora').value,
+                personas: parseInt(document.getElementById('regPersonas').value),
+                tipoMesa: document.getElementById('regTipoMesa').value,
+                piso: document.getElementById('regTipoMesa').value === 'Terraza' ? null : document.getElementById('regPiso').value,
+                mesa: document.getElementById('regMesa').value,
+                cumpleanos: document.getElementById('regCumpleanos').checked ? 'Sí' : 'No',
+                estado: 'Confirmada', // Al ser manual por el Admin, entra directamente como Confirmada
+                cliente: {
+                    nombre: document.getElementById('regNombre').value,
+                    telefono: document.getElementById('regTelefono').value
+                }
+            };
+
+            // Enviamos los datos mediante un POST a tu API de Node.js
+            fetch('/api/reservas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(nuevaReserva)
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Error en la inserción del servidor');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Reserva manual guardada con éxito:', data);
+
+                    // Alertas nativas de Bootstrap o recarga limpia del arreglo local
+                    alert(`¡Reserva creada con éxito! Código: ${data.reserva?.id || 'OK'}`);
+
+                    // Limpiamos los campos del formulario
+                    formNuevaReserva.reset();
+
+                    // Cerramos el modal usando la API de Bootstrap 5
+                    const modalElement = document.getElementById('modalNuevaReserva');
+                    const modalInstancia = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstancia) modalInstancia.hide();
+
+                    // Refrescamos tus datos volviendo a llamar a tu función cargadora principal
+                    if (typeof cargarReservas === 'function') {
+                        cargarReservas();
+                    } else if (typeof obtenerReservas === 'function') {
+                        obtenerReservas();
+                    } else {
+                        // Si trabajas con recarga directa:
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al registrar la reserva manual:', error);
+                    alert('No se pudo guardar la reserva. Verifica que el servidor de Node.js esté corriendo.');
+                });
+        });
+    }
 });
 
 // 5.2 Función global para levantar el modal con la info completa de la reserva

@@ -130,6 +130,10 @@
                 <input type="text" class="form-control border-start-0" id="inputBuscar"
                     placeholder="Buscar por nombre, teléfono o ID...">
             </div>
+            <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal"
+                data-bs-target="#modalNuevaReserva">
+                <i class="bi bi-plus-lg"></i> Nueva Reserva
+            </button>
             <div class="d-flex align-items-center gap-2 filter-group">
                 <select class="form-select form-select-sm text-dark bg-white" id="selectEstado">
                     <option selected>Todos los estados</option>
@@ -168,6 +172,7 @@
         <i class="bi bi-question-lg"></i>
     </div>
 
+    <!-- Modal para Detalles de Reserva -->
     <div class="modal fade" id="modalDetalleReserva" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow border-0">
@@ -234,6 +239,104 @@
                     <button type="button" class="btn btn-secondary btn-sm rounded-2"
                         data-bs-dismiss="modal">Entendido</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nueva Reserva de forma manual -->
+    <div class="modal fade" id="modalNuevaReserva" tabindex="-1" aria-labelledby="modalNuevaReservaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalNuevaReservaLabel"><i class="bi bi-journal-plus me-2"></i>Registrar
+                        Reserva Manual</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form id="formNuevaReserva">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="regNombre" class="form-label small fw-semibold text-muted">Nombre del
+                                Cliente</label>
+                            <input type="text" class="form-control" id="regNombre" required
+                                placeholder="Ej. Juan Pérez">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regTelefono" class="form-label small fw-semibold text-muted">Teléfono de
+                                Contacto</label>
+                            <input type="tel" class="form-control" id="regTelefono" required
+                                placeholder="Ej. 987654321">
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="regFecha" class="form-label small fw-semibold text-muted">Fecha</label>
+                                <input type="date" class="form-control" id="regFecha" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="regHora" class="form-label small fw-semibold text-muted">Hora
+                                    disponible</label>
+                                <select class="form-select" id="regHora" required>
+                                    <option value="" disabled selected>Seleccione...</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="regPersonas" class="form-label small fw-semibold text-muted">N°
+                                    Comensales</label>
+                                <input type="number" class="form-control" id="regPersonas" min="1" max="10" value="2"
+                                    required>
+                                <div id="personasHelp" class="form-text text-muted" style="font-size: 0.75rem;">Máx. 10
+                                    personas para Mesa Normal</div>
+                            </div>
+                            <div class="col-6">
+                                <label for="regTipoMesa" class="form-label small fw-semibold text-muted">Zona /
+                                    Tipo</label>
+                                <select class="form-select" id="regTipoMesa" required>
+                                    <option value="Mesa Normal">Mesa Normal</option>
+                                    <option value="Terraza">Terraza</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3" id="filaPisoMesa">
+                            <div class="col-6">
+                                <label for="regPiso" class="form-label small fw-semibold text-muted">Piso
+                                    Asignado</label>
+                                <select class="form-select" id="regPiso">
+                                    <option value="1">Piso 1</option>
+                                    <option value="2">Piso 2</option>
+                                    <option value="3">Piso 3</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label for="regMesa" class="form-label small fw-semibold text-muted">Número de
+                                    Mesa</label>
+                                <input type="text" class="form-control" id="regMesa" required
+                                    placeholder="Ej. 12 o T-4">
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="regCumpleanos">
+                            <label class="form-check-label small fw-medium text-dark" for="regCumpleanos">¿Es una
+                                celebración de Cumpleaños?</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-top-0">
+                        <button type="button" class="btn btn-secondary small" data-bs-toggle="modal"
+                            data-bs-target="#modalNuevaReserva">Cancelar</button>
+                        <button type="submit" class="btn btn-success small"><i
+                                class="bi bi-check-circle me-1"></i>Guardar Reserva</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
