@@ -1,0 +1,27 @@
+{
+  "name": "reservacion-el-gran-pez-v1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Armando-Zav/Proyecto-Real-Pez.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Armando-Zav/Proyecto-Real-Pez/issues"
+  },
+  "homepage": "https://github.com/Armando-Zav/Proyecto-Real-Pez#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

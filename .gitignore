@@ -1,6 +1,7 @@
 # Dependencias
 node_modules/
 dist/
+.env
 
 # Archivos de configuración de VS Code y editores
 .vscode/

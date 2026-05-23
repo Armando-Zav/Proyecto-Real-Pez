@@ -1,6 +1,4 @@
-﻿/* ===========================================
-   RESERVACIÓN - JAVASCRIPT MODERNO
-   =========================================== */
+﻿/* Lanzadores de funciones principales */
 
 document.addEventListener('DOMContentLoaded', function() {
     inicializarCalendario();
@@ -407,12 +405,57 @@ function finalizarReserva() {
         return;
     }
 
+    // 1. Terminar de capturar los datos del cliente
     datosReserva.cliente.nombre = document.getElementById('input-nombre').value.trim();
     datosReserva.cliente.telefono = document.getElementById('input-telefono').value.trim();
     datosReserva.cliente.email = document.getElementById('input-email').value.trim();
     datosReserva.cliente.comentarios = document.getElementById('input-comentarios').value.trim();
 
-    mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito, ${datosReserva.cliente.nombre}! Nos contactaremos pronto al ${datosReserva.cliente.telefono}.`);
+    // 2. UX: Deshabilitar el botón de confirmación para evitar envíos duplicados
+    const btnConfirmar = document.querySelector('#form-confirmar-reserva button[type="submit"]');
+    const textoOriginalBtn = btnConfirmar ? btnConfirmar.innerHTML : 'Confirmar Reserva';
+    
+    if (btnConfirmar) {
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...`;
+    }
+
+    // 3. Conectar los cables: Enviar el objeto datosReserva a Node.js
+    fetch('/api/reservas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datosReserva) // Mandamos TODA la estructura limpia
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en el servidor al procesar la reserva.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Éxito total: El backend nos devuelve la reserva creada con su ID auto-generado
+        mostrarMensajeConfirmacion(
+            'success', 
+            `¡Reserva registrada con éxito, ${datosReserva.cliente.nombre}! Código de atención: ${data.reserva.id}.`
+        );
+        
+        // Redireccionar al inicio o limpiar el flujo tras 4 segundos
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 4000);
+    })
+    .catch(err => {
+        console.error('Error al enviar la reserva:', err);
+        mostrarMensajeConfirmacion('danger', 'Hubo un problema de conexión con el servidor. Inténtalo de nuevo por favor.');
+        
+        // UX: Si falló, reactivamos el botón para que el usuario pueda reintentar
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerHTML = textoOriginalBtn;
+        }
+    });
 }
 
 function mostrarAlerta(mensaje) {
