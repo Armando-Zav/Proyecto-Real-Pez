@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    const inputBusqueda = document.getElementById('inputBusqueda');
+    const inputFecha = document.getElementById('inputFecha');
+    const selectEstado = document.getElementById('selectEstado'); // 👈 Tu ID exacto
+
+    // Asignamos los eventos de escucha
+    if (inputBusqueda && inputFecha && selectEstado) {
+        inputBusqueda.addEventListener('input', filtrarYRenderizar);
+        inputFecha.addEventListener('change', filtrarYRenderizar);
+        selectEstado.addEventListener('change', filtrarYRenderizar);
+    }
     const tableBody = document.getElementById('tableBody');
 
     // Eventos para activar los filtros en tiempo real
@@ -22,30 +33,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Función principal para renderizar la tabla con filtros en tiempo real
+    // 2. Función principal para renderizar la tabla con filtros en tiempo real
     function renderTable() {
         tableBody.innerHTML = '';
 
         // Capturamos los valores actuales de los filtros
         const textoBusqueda = document.getElementById('inputBuscar').value.toLowerCase();
         const fechaFiltro = document.getElementById('inputFecha').value;
-        const estadoFiltro = document.getElementById('selectEstado').value;
+        const estadoFiltro = document.getElementById('selectEstado').value; // Guardará "1", "2", "3" o "Todos los estados"
 
-        // Monitoreo de Filtros
+        // Monitoreo de Filtros en Consola
         console.log("--- Monitoreo de Filtros ---");
         console.log("Texto que escribiste:", textoBusqueda);
         console.log("Fecha seleccionada en el input:", fechaFiltro);
-        console.log("Estado seleccionado:", estadoFiltro);
+        console.log("Estado seleccionado (Value):", estadoFiltro);
 
         for (let i = 0; i < listaReservas.length; i++) {
             const reserva = listaReservas[i];
 
-            // 1. Filtro de Texto (Buscador apunta directamente a .nombre)
+            // 1. Filtro de Texto (Apunta a nombre e ID de la reserva)
             const coincideTexto = reserva.cliente.nombre.toLowerCase().includes(textoBusqueda) ||
                 reserva.id.toLowerCase().includes(textoBusqueda);
 
-            // 2. Filtro de Estado 
-            const coincideEstado = (estadoFiltro === 'Todos los estados' || estadoFiltro === '') ||
-                reserva.estado === estadoFiltro;
+            // 2. 🌟 TRADUCCIÓN MÁGICA DE TUS VALUES (1, 2, 3)
+            let coincideEstado = false;
+
+            if (estadoFiltro === 'Todos los estados' || estadoFiltro === '') {
+                coincideEstado = true; // Si elige el primero, pasan todos
+            } else if (estadoFiltro === '1' && reserva.estado === 'Confirmada') {
+                coincideEstado = true;
+            } else if (estadoFiltro === '2' && reserva.estado === 'Pendiente') {
+                coincideEstado = true;
+            } else if (estadoFiltro === '3' && reserva.estado === 'Cancelada') {
+                coincideEstado = true;
+            }
 
             // 3. Filtro de Fecha
             const coincideFecha = !fechaFiltro || reserva.fecha === fechaFiltro;
@@ -61,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="action-btn icon-cancel" onclick="cambiarEstadoReserva('${reserva.id}', 'Cancelada')" title="Cancelar"><i class="bi bi-x"></i></button>`;
                 }
 
-                // HTML real de la fila estructurada
+                // HTML real de la fila estructurada tal como la tenías
                 const rowHTML = `
                 <tr class="ps-3 pe-3">
                     <th scope="row" class="ps-3 small text-muted font-monospace">${reserva.id}</th>
@@ -84,8 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </td>
                 </tr>
-                `;
-
+            `;
                 tableBody.insertAdjacentHTML('beforeend', rowHTML);
             }
         }
@@ -268,4 +288,43 @@ function formatearFecha(fechaISO) {
     const mesTexto = meses[mesNum] || '';
 
     return `${dia} ${mesTexto} ${anio}`;
-}   
+}
+
+function filtrarYRenderizar() {
+    // 1. Leer los valores actuales de la pantalla
+    const texto = document.getElementById('inputBusqueda').value.toLowerCase().trim();
+    const fechaSeleccionada = document.getElementById('inputFecha').value;
+    const valorEstado = document.getElementById('selectEstado').value; // Guardará "1", "2", "3" o "Todos los estados"
+
+    // 2. Filtrar el arreglo principal
+    const reservasFiltradas = listaReservas.filter(reserva => {
+
+        // Regla A: Buscador por texto
+        const coincideTexto = !texto ||
+            reserva.cliente?.nombre?.toLowerCase().includes(texto) ||
+            reserva.id.toString().includes(texto);
+
+        // Regla B: Filtro por fecha
+        const coincideFecha = !fechaSeleccionada || reserva.fecha === fechaSeleccionada;
+
+        // Regla C: Traducción de tus valores numéricos (1, 2, 3)
+        let coincideEstado = true; // Por defecto pasan todas (si elige "Todos los estados")
+
+        if (valorEstado === "1") {
+            // Filtra si el estado es el texto 'Confirmada' o el número 1
+            coincideEstado = (reserva.estado === "Confirmada" || reserva.estado === 1 || reserva.estado === "1");
+        } else if (valorEstado === "2") {
+            // Filtra si el estado es el texto 'Pendiente' o el número 2
+            coincideEstado = (reserva.estado === "Pendiente" || reserva.estado === 2 || reserva.estado === "2");
+        } else if (valorEstado === "3") {
+            // Filtra si el estado es el texto 'Cancelada' o el número 3
+            coincideEstado = (reserva.estado === "Cancelada" || reserva.estado === 3 || reserva.estado === "3");
+        }
+
+        // Retorna la reserva solo si cumple las 3 condiciones
+        return coincideTexto && coincideFecha && coincideEstado;
+    });
+
+    // 3. Volver a pintar la tabla con los datos limpios
+    renderizarTabla(reservasFiltradas);
+}
