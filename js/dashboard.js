@@ -167,31 +167,63 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarReservasDesdeServidor();
 
     window.verDetallesReserva = function (id) {
-        // Ahora sí tiene acceso total a listaReservas porque están en la misma "habitación"
+        // Buscamos la reserva seleccionada en el arreglo local
         const reserva = listaReservas.find(r => r.id === id);
-
         if (!reserva) {
             console.error("No se encontró la reserva con ID:", id);
             return;
         }
 
-        // Inyectar los datos en el modal
+        // 1. Rellenar los datos básicos que ya tenías
         document.getElementById('modalDetalleId').innerText = reserva.id;
-        document.getElementById('modalDetalleCliente').innerText = reserva.cliente?.nombre || reserva.nombre || '-';
-        document.getElementById('modalDetalleTelefono').innerText = reserva.cliente?.telefono || reserva.telefono || '-';
-        document.getElementById('modalDetalleFecha').innerText = reserva.fecha;
+        document.getElementById('modalDetalleCliente').innerText = reserva.cliente?.nombre || 'Sin nombre';
+        document.getElementById('modalDetalleTelefono').innerText = reserva.cliente?.telefono || 'Sin teléfono';
+        document.getElementById('modalDetalleFecha').innerText = typeof formatearFecha === 'function' ? formatearFecha(reserva.fecha) : reserva.fecha;
         document.getElementById('modalDetalleHora').innerText = reserva.hora;
         document.getElementById('modalDetallePersonas').innerText = reserva.personas;
+        document.getElementById('modalDetalleEstado').innerHTML = typeof getStatusBadgeHTML === 'function' ? getStatusBadgeHTML(reserva.estado) : reserva.estado;
 
-        if (typeof getStatusBadgeHTML === 'function') {
-            document.getElementById('modalDetalleEstado').innerHTML = getStatusBadgeHTML(reserva.estado);
+        // 2. LÓGICA CONDICIONAL: Tipo de Mesa (Zona) y Piso
+        const tipo = reserva.tipoMesa || 'Normal';
+        const txtTipoMesa = document.getElementById('modalDetalleTipoMesa');
+        const filaPiso = document.getElementById('filaModalPiso');
+        const txtPiso = document.getElementById('modalDetallePiso');
+
+        if (tipo === 'Terraza') {
+            txtTipoMesa.innerHTML = `<span class="badge bg-info text-dark"><i class="bi bi-tree-fill me-1"></i> Terraza</span>`;
+            // Si es Terraza, ocultamos por completo la fila del piso
+            filaPiso.classList.add('d-none');
         } else {
-            document.getElementById('modalDetalleEstado').innerText = reserva.estado;
+            txtTipoMesa.innerHTML = `<span class="badge bg-secondary text-white"><i class="bi bi-house-door-fill me-1"></i> Mesa Normal</span>`;
+            // Si es Mesa Normal, aseguramos que la fila sea visible
+            filaPiso.classList.remove('d-none');
+            // Renderizamos el piso correspondiente
+            txtPiso.innerText = reserva.piso ? `Piso ${reserva.piso}` : 'Piso 1';
         }
 
-        // Mostrar el modal de Bootstrap
-        const elModal = document.getElementById('modalDetalleReserva');
-        const miModal = new bootstrap.Modal(elModal);
+        // 3. NÚMERO DE MESA (Soporta número limpio o texto)
+        const nroMesa = reserva.mesa || reserva.numeroMesa || 'N/A';
+        const txtNumeroMesa = document.getElementById('modalDetalleNumeroMesa');
+
+        if (!isNaN(nroMesa) && nroMesa !== 'N/A') {
+            txtNumeroMesa.innerHTML = `<span class="text-primary fw-bold">#${nroMesa}</span>`;
+        } else {
+            txtNumeroMesa.innerHTML = `<span class="text-primary fw-bold">${nroMesa}</span>`;
+        }
+
+        // 4. DETECTAR CUMPLEAÑOS (Badge rojo destacado)
+        const txtCumpleanos = document.getElementById('modalDetalleCumpleanos');
+        const esCumple = (reserva.cumpleanos === 'Sí' || reserva.cumpleanos === true || reserva.esCumpleanos === true);
+
+        if (esCumple) {
+            txtCumpleanos.innerHTML = `<span class="badge bg-danger text-white"><i class="bi bi-cake2-fill me-1"></i> ¡Sí, es un Cumpleaños!</span>`;
+        } else {
+            txtCumpleanos.innerHTML = `<span class="badge bg-light text-muted border">No</span>`;
+        }
+
+        // 5. Mostrar limpiamente el modal de Bootstrap
+        const modalElement = document.getElementById('modalDetalleReserva');
+        const miModal = new bootstrap.Modal(modalElement);
         miModal.show();
     };
 });
