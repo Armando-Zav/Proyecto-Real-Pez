@@ -221,6 +221,14 @@
     cursor: default;
 }
 
+/* Día deshabilitado (Hoy y fechas pasadas) */
+.day-cell.disabled-day {
+    color: #cbd5e1 !important;       /* Gris claro texturizado (apagado) */
+    background-color: #f8fafc !important; /* Fondo grisáceo muy sutil */
+    cursor: not-allowed !important;  /* Cambia el cursor a un símbolo de prohibido */
+    pointer-events: none;            /* Bloquea cualquier intento de clic por seguridad */
+}
+
 /* ==========================================
    FULLCALENDAR OVERRIDES (SOPORTE LEGADO)
    ========================================== */

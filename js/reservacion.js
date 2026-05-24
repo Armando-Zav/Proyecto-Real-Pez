@@ -104,6 +104,10 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
     const firstDayIndex = new Date(year, monthIndex, 1).getDay();
     const totalDays = new Date(year, monthIndex + 1, 0).getDate();
 
+    // 1. Obtener la fecha de hoy a medianoche (limpia de horas)
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     // Inyectar celdas en blanco para los días desfasados del mes
     for (let i = 0; i < firstDayIndex; i++) {
         const emptyCell = document.createElement('div');
@@ -114,7 +118,6 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
     // Dibujar los días del mes actual
     for (let day = 1; day <= totalDays; day++) {
         const dayCell = document.createElement('div');
-        dayCell.classList.add('day-cell');
         dayCell.innerText = day;
 
         // Estructurar la cadena en formato estándar YYYY-MM-DD
@@ -124,21 +127,34 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
 
         dayCell.setAttribute('data-date', fullDateStr);
 
-        // Mantener pintado si coincide con la selección actual
-        if (window.fechaSeleccionada === fullDateStr) {
-            dayCell.classList.add('selected-day');
+        // 2. Crear objeto Date para el día de la celda actual
+        const fechaCelda = new Date(year, monthIndex, day);
+
+        // 3. CONTROL DE REGLA DE NEGOCIO: Bloquear hoy y el pasado
+        if (fechaCelda <= hoy) {
+            // Si el día es menor o igual a hoy, se bloquea visualmente
+            dayCell.classList.add('day-cell', 'disabled-day');
+            // Al no tener addEventListener('click'), queda totalmente inerte
+        } else {
+            // Si es de mañana en adelante, el día es completamente válido
+            dayCell.classList.add('day-cell');
+
+            // Mantener pintado si coincide con la selección actual
+            if (window.fechaSeleccionada === fullDateStr) {
+                dayCell.classList.add('selected-day');
+            }
+
+            // Manejador de selección de celda (Solo activo para días permitidos)
+            dayCell.addEventListener('click', function () {
+                document.querySelectorAll('.day-cell.selected-day').forEach(el => el.classList.remove('selected-day'));
+                this.classList.add('selected-day');
+
+                window.fechaSeleccionada = this.getAttribute('data-date');
+
+                // Abrir el modal de especificaciones directamente
+                abrirModalFecha();
+            });
         }
-
-        // Manejador de selección de celda
-        dayCell.addEventListener('click', function () {
-            document.querySelectorAll('.day-cell.selected-day').forEach(el => el.classList.remove('selected-day'));
-            this.classList.add('selected-day');
-
-            window.fechaSeleccionada = this.getAttribute('data-date');
-
-            // Abrir el modal de especificaciones directamente
-            abrirModalFecha();
-        });
 
         gridElement.appendChild(dayCell);
     }
