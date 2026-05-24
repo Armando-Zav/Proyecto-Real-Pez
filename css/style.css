@@ -200,9 +200,6 @@ section.container-fluid.p-0.mt-5.mb-6 {
     padding-bottom: 3rem;
 }
 
-.bg-light {
-    background: linear-gradient(135deg, rgba(2, 62, 138, 0.95), rgba(0, 180, 216, 0.95));
-}
 
 .ratio iframe {
     filter: saturate(1.05) contrast(1.02);

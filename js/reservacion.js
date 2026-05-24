@@ -1,15 +1,10 @@
-﻿/* Lanzadores de funciones principales */
-
-document.addEventListener('DOMContentLoaded', function() {
-    inicializarCalendario();
-    inicializarWizard();
-    inicializarSelectores();
-    inicializarModalFecha();
-});
-
-/* Variables para el control del wizard y reserva */
+﻿/* ==========================================================================
+   VARIABLES GLOBALES Y CONFIGURACIÓN
+   ========================================================================== */
 let pasoActual = 1;
-let modalFecha; // Instancia global del modal
+let modalFecha; // Instancia global del modal de Bootstrap
+let currentDatePointer = new Date(); // Controla la navegación de meses
+
 let datosReserva = {
     fecha: null,
     hora: null,
@@ -19,7 +14,6 @@ let datosReserva = {
     terrazaConfirmada: false,
     piso: 1,
     mesa: null,
-    /* Datos del cliente en JSON*/
     cliente: {
         nombre: '',
         telefono: '',
@@ -28,9 +22,9 @@ let datosReserva = {
     }
 };
 
-/* Configuracion de mesas disponibles por piso */
+/* Configuración de mesas disponibles por piso */
 const mesasDisponiblesPorPiso = {
-    1: { // Piso 1
+    1: {
         1: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
         2: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
         4: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
@@ -38,98 +32,180 @@ const mesasDisponiblesPorPiso = {
         8: [13],
         10: []
     },
-    2: { // Piso 2
-        1: [],
-        2: [],
-        4: [],
-        6: [],
-        8: [],
-        10: []
+    2: {
+        1: [], 2: [], 4: [], 6: [], 8: [], 10: []
     },
-    3: { // Piso 3
-        1: [],
-        2: [],
-        4: [],
-        6: [],
-        8: [],
-        10: []
+    3: {
+        1: [], 2: [], 4: [], 6: [], 8: [], 10: []
     }
 };
 
-/* CALENDARIO */
-function inicializarCalendario() {
-    const calendarEl = document.getElementById('calendar');
-    if (!calendarEl) {
-        console.error('No se encontró el elemento #calendar');
-        return;
+/* ==========================================================================
+   LANZADOR PRINCIPAL (DOM READY UNIFICADO)
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Inicializar componentes del Wizard y selectores
+    inicializarWizard();
+    inicializarSelectores();
+    inicializarModalFecha();
+
+    // 2. Renderizar el nuevo calendario propio desde cero
+    renderCustomCalendar();
+
+    // 3. Controladores de eventos para la navegación del calendario nativo
+    const btnPrev = document.getElementById('btn-prev-months');
+    const btnNext = document.getElementById('btn-next-months');
+
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+            currentDatePointer.setMonth(currentDatePointer.getMonth() - 1);
+            renderCustomCalendar();
+        });
     }
+    if (btnNext) {
+        btnNext.addEventListener('click', () => {
+            currentDatePointer.setMonth(currentDatePointer.getMonth() + 1);
+            renderCustomCalendar();
+        });
+    }
+});
 
-    const hoy = new Date();
-    const unMesDespues = new Date();
-    unMesDespues.setDate(hoy.getDate() + 30);
+/* ==========================================================================
+   LÓGICA DEL CALENDARIO PROPIO (DOS MESES)
+   ========================================================================== */
+function renderCustomCalendar() {
+    const year = currentDatePointer.getFullYear();
+    const monthIndex1 = currentDatePointer.getMonth();
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        selectable: true,
-        headerToolbar: {
-            left: 'prev',
-            center: 'title',
-            right: 'next'
-        },
-        validRange: {
-            start: hoy,
-            end: unMesDespues
-        },
-        dateClick: function(info) {
-            window.fechaSeleccionada = info.dateStr;
-            info.dayEl.style.backgroundColor = '#f0f0f0';
-            abrirModalFecha();
-        }
-    });
+    // El segundo recuadro siempre muestra el mes siguiente consecutivo
+    const monthIndex2 = (monthIndex1 + 1) % 12;
+    const year2 = monthIndex1 === 11 ? year + 1 : year;
 
-    calendar.render();
+    // Actualizar dinámicamente el título del año actual
+    const titleEl = document.getElementById('calendar-year-title');
+    if (titleEl) titleEl.innerText = `Reservas ${year}`;
+
+    // Construir la cuadrícula para ambos bloques de meses
+    buildMonthGrid(year, monthIndex1, 'month-title-1', 'days-grid-1');
+    buildMonthGrid(year2, monthIndex2, 'month-title-2', 'days-grid-2');
 }
 
+function buildMonthGrid(year, monthIndex, titleId, gridId) {
+    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+    const titleElement = document.getElementById(titleId);
+    if (titleElement) titleElement.innerText = monthNames[monthIndex];
+
+    const gridElement = document.getElementById(gridId);
+    if (!gridElement) return;
+    gridElement.innerHTML = ''; // Vaciar contenido viejo antes de redibujar
+
+    // Calcular el desfase del primer día (0 = Dom, 1 = Lun...) y días totales
+    const firstDayIndex = new Date(year, monthIndex, 1).getDay();
+    const totalDays = new Date(year, monthIndex + 1, 0).getDate();
+
+    // Inyectar celdas en blanco para los días desfasados del mes
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.classList.add('day-cell', 'empty-cell');
+        gridElement.appendChild(emptyCell);
+    }
+
+    // Dibujar los días del mes actual
+    for (let day = 1; day <= totalDays; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('day-cell');
+        dayCell.innerText = day;
+
+        // Estructurar la cadena en formato estándar YYYY-MM-DD
+        const strMonth = String(monthIndex + 1).padStart(2, '0');
+        const strDay = String(day).padStart(2, '0');
+        const fullDateStr = `${year}-${strMonth}-${strDay}`;
+
+        dayCell.setAttribute('data-date', fullDateStr);
+
+        // Mantener pintado si coincide con la selección actual
+        if (window.fechaSeleccionada === fullDateStr) {
+            dayCell.classList.add('selected-day');
+        }
+
+        // Manejador de selección de celda
+        dayCell.addEventListener('click', function () {
+            document.querySelectorAll('.day-cell.selected-day').forEach(el => el.classList.remove('selected-day'));
+            this.classList.add('selected-day');
+
+            window.fechaSeleccionada = this.getAttribute('data-date');
+
+            // Abrir el modal de especificaciones directamente
+            abrirModalFecha();
+        });
+
+        gridElement.appendChild(dayCell);
+    }
+}
+
+/* ==========================================================================
+   CONEXIÓN FORMULARIO MODAL -> WIZARD
+   ========================================================================== */
 function inicializarModalFecha() {
     const modalEl = document.getElementById('modalConfirmarFecha');
     if (!modalEl) return;
-    modalFecha = new bootstrap.Modal(modalEl);
 
-    modalEl.addEventListener('show.bs.modal', function() {
+    // Instanciar el modal globalmente
+    modalFecha = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    // Evento previo a que se muestre el modal en pantalla
+    modalEl.addEventListener('show.bs.modal', function () {
         const fechaInput = document.getElementById('fecha-seleccionada-display');
         if (fechaInput && window.fechaSeleccionada) {
-            const fecha = new Date(window.fechaSeleccionada);
-            fechaInput.value = fecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            // Formatear visualmente para el usuario (Ej: 26/05/2026)
+            const [anio, mes, dia] = window.fechaSeleccionada.split('-');
+            fechaInput.value = `${dia}/${mes}/${anio}`;
         }
+
         const horaInput = document.getElementById('input-hora');
         if (horaInput && !horaInput.value) {
             horaInput.value = '12:00';
         }
     });
 
-    document.getElementById('form-confirmar-fecha').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const hora = document.getElementById('input-hora').value;
-        const tipoMesa = document.querySelector('input[name="tipoMesa"]:checked').value;
-        const cumpleanos = document.getElementById('check-cumpleanos').checked;
+    // PROCESAR MODAL: Unificado en un único Listener libre de conflictos
+    const formConfirmarFecha = document.getElementById('form-confirmar-fecha');
+    if (formConfirmarFecha) {
+        formConfirmarFecha.addEventListener('submit', function (event) {
+            event.preventDefault(); // Detener recarga de página
 
-        if (!window.fechaSeleccionada) {
-            mostrarAlerta('Selecciona primero una fecha en el calendario.');
-            return;
-        }
-        if (!hora) {
-            mostrarAlerta('Selecciona una hora para tu reserva.');
-            return;
-        }
+            const hora = document.getElementById('input-hora')?.value;
+            const radioTipoMesa = document.querySelector('input[name="tipoMesa"]:checked');
+            const tipoMesa = radioTipoMesa ? radioTipoMesa.value : 'Normal';
+            const cumpleanos = document.getElementById('check-cumpleanos')?.checked || false;
 
-        datosReserva.fecha = window.fechaSeleccionada;
-        datosReserva.hora = hora;
-        datosReserva.tipoMesa = tipoMesa;
-        datosReserva.cumpleanos = cumpleanos;
-        modalFecha.hide();
-        cambiarPaso(2);
-    });
+            // Validaciones de seguridad
+            if (!window.fechaSeleccionada) {
+                mostrarAlerta('Selecciona primero una fecha en el calendario.');
+                return;
+            }
+            if (!hora) {
+                mostrarAlerta('Selecciona una hora para tu reserva.');
+                return;
+            }
+
+            // Guardar datos recolectados de forma segura en la estructura del Wizard
+            datosReserva.fecha = window.fechaSeleccionada;
+            datosReserva.hora = hora;
+            datosReserva.tipoMesa = tipoMesa;
+            datosReserva.cumpleanos = cumpleanos;
+
+            // Cerrar el modal limpiamente
+            modalFecha.hide();
+
+            // Avanzar automáticamente al paso 2 usando la API nativa de tu Wizard
+            cambiarPaso(2);
+
+            // Efecto UX: sube el scroll suavemente para ver el paso 2
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 }
 
 function abrirModalFecha() {
@@ -140,14 +216,18 @@ function abrirModalFecha() {
     modalFecha.show();
 }
 
-/* ===========================================
-   WIZARD LOGIC
-   =========================================== */
+/* ==========================================================================
+   ARQUITECTURA WIZARD (PASOS)
+   ========================================================================== */
 function inicializarWizard() {
-    document.getElementById('btn-prev').addEventListener('click', () => cambiarPaso(pasoActual - 1));
+    const btnPrev = document.getElementById('btn-prev');
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => cambiarPaso(pasoActual - 1));
+    }
+
     const formConfirmarReserva = document.getElementById('form-confirmar-reserva');
     if (formConfirmarReserva) {
-        formConfirmarReserva.addEventListener('submit', function(event) {
+        formConfirmarReserva.addEventListener('submit', function (event) {
             event.preventDefault();
             finalizarReserva();
         });
@@ -158,8 +238,8 @@ function inicializarWizard() {
 function cambiarPaso(nuevoPaso) {
     if (nuevoPaso === pasoActual) return;
 
-    if (pasoActual !== 1 && !validarPasoActual()) return;
-    if (pasoActual === 1 && nuevoPaso > 1 && !validarPasoActual()) return;
+    // Ejecutar validaciones solo si intentamos avanzar
+    if (nuevoPaso > pasoActual && !validarPasoActual()) return;
 
     pasoActual = nuevoPaso;
     actualizarWizardUI();
@@ -191,37 +271,25 @@ function validarPasoActual() {
                 return false;
             }
             return true;
-        case 3:
-            return true;
         default:
             return true;
     }
 }
 
-function validarDatosCliente() {
-    const nombre = document.getElementById('input-nombre')?.value.trim();
-    const telefono = document.getElementById('input-telefono')?.value.trim();
-    const email = document.getElementById('input-email')?.value.trim();
-    if (!nombre) return 'Por favor ingresa tu nombre completo.';
-    if (!telefono) return 'Por favor ingresa un teléfono de contacto.';
-    if (!email) return 'Por favor ingresa un correo electrónico válido.';
-    return '';
-}
-
-function mostrarMensajeConfirmacion(tipo, mensaje) {
-    const alerta = document.getElementById('confirmacion-alerta');
-    if (!alerta) return;
-    alerta.className = `alert alert-${tipo}`;
-    alerta.textContent = mensaje;
-    alerta.classList.remove('d-none');
-}
-
 function mostrarPaso(paso) {
+    // 1. Ocultar TODOS los contenedores usando d-none de Bootstrap
     document.querySelectorAll('.wizard-step-content').forEach(content => {
         content.classList.remove('active');
+        content.classList.add('d-none'); // <-- Esto garantiza que desaparezca de la pantalla
     });
+
+    // 2. Mostrar únicamente el contenedor del paso actual quitando el d-none
     const pasoElement = document.getElementById(`step-${paso}`);
-    if (pasoElement) pasoElement.classList.add('active');
+    if (pasoElement) {
+        pasoElement.classList.add('active');
+        pasoElement.classList.remove('d-none'); // <-- Esto lo vuelve a hacer visible
+    }
+
     if (paso === 2) actualizarVistaStep2();
     actualizarNavegacion();
 }
@@ -264,16 +332,18 @@ function actualizarNavegacion() {
     const btnPrev = document.getElementById('btn-prev');
     const btnNext = document.getElementById('btn-next');
 
+    if (!btnPrev || !btnNext) return;
+
+    // En el paso 1 el calendario controla la salida, ocultamos navegación del wizard
     if (pasoActual === 1) {
         btnPrev.style.display = 'none';
         btnNext.style.display = 'none';
         return;
     }
 
-    btnPrev.style.display = pasoActual === 1 ? 'none' : 'block';
+    btnPrev.style.display = 'block';
 
     if (pasoActual === 3) {
-        // En el paso 3, la confirmación se hace dentro del formulario, no con el botón del wizard
         btnNext.style.display = 'none';
     } else {
         btnNext.style.display = 'inline-block';
@@ -283,12 +353,12 @@ function actualizarNavegacion() {
     }
 }
 
-/* ===========================================
-   SELECTORES
-   =========================================== */
+/* ==========================================================================
+   CONTROLADORES DE SELECCIÓN (PISOS, MESAS Y CAPACIDADES)
+   ========================================================================== */
 function inicializarSelectores() {
     document.querySelectorAll('.btn-persona').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const personas = parseInt(this.getAttribute('data-cap'));
             document.querySelectorAll('.btn-persona').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
@@ -298,17 +368,16 @@ function inicializarSelectores() {
     });
 
     document.querySelectorAll('.btn-piso').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const piso = parseInt(this.getAttribute('data-piso')) || 2;
+        btn.addEventListener('click', function () {
+            const piso = parseInt(this.getAttribute('data-piso')) || 1;
             document.querySelectorAll('.btn-piso').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            datosReserva.piso = piso;
-            cambiarPiso(piso);
+            cambiarFiltroPiso(piso);
         });
     });
 
     document.querySelectorAll('.mesa').forEach(mesa => {
-        mesa.addEventListener('click', function() {
+        mesa.addEventListener('click', function () {
             if (this.classList.contains('mesa-bloqueada')) return;
             document.querySelectorAll('.mesa').forEach(m => m.classList.remove('selected'));
             this.classList.add('selected');
@@ -318,7 +387,7 @@ function inicializarSelectores() {
 
     const checkboxConfirmarTerraza = document.getElementById('checkbox-confirmar-terrace');
     if (checkboxConfirmarTerraza) {
-        checkboxConfirmarTerraza.addEventListener('change', function() {
+        checkboxConfirmarTerraza.addEventListener('change', function () {
             if (this.checked) {
                 datosReserva.terrazaConfirmada = true;
                 datosReserva.mesa = 'Terraza';
@@ -333,15 +402,13 @@ function inicializarSelectores() {
 }
 
 function filtrarMesasPorCapacidad(cantidad) {
-    if (datosReserva.tipoMesa === 'Terraza') {
-        return;
-    }
+    if (datosReserva.tipoMesa === 'Terraza') return;
 
     const mesasDisponibles = mesasDisponiblesPorPiso[datosReserva.piso]?.[cantidad] || [];
-    
+
     document.querySelectorAll('.mesa').forEach(mesa => {
         const numeroMesa = parseInt(mesa.textContent.trim());
-        
+
         if (mesasDisponibles.includes(numeroMesa)) {
             mesa.classList.remove('mesa-bloqueada');
             mesa.style.pointerEvents = 'auto';
@@ -355,33 +422,32 @@ function filtrarMesasPorCapacidad(cantidad) {
         }
     });
 
-    // Mostrar mensaje solo si no hay mesas disponibles
     if (mesasDisponibles.length === 0) {
         mostrarAlerta(`No hay mesas disponibles para ${cantidad} personas en este piso. Intenta con otro piso.`);
     }
 }
 
-function cambiarPiso(piso) {
+function cambiarFiltroPiso(piso) {
     datosReserva.piso = piso;
-    datosReserva.mesa = null; // Limpiar selección anterior
+    datosReserva.mesa = null;
     document.querySelectorAll('.mesa').forEach(m => m.classList.remove('selected'));
-    
-    // Reaplicar filtrado de mesas para la cantidad de personas seleccionada
+
     if (datosReserva.personas > 0) {
         filtrarMesasPorCapacidad(datosReserva.personas);
     }
 }
 
-/* ===========================================
-   RESUMEN Y CONFIRMACIÓN
-   =========================================== */
+/* ==========================================================================
+   RESUMEN FINAL Y ENVÍO AL SERVIDOR (FETCH)
+   ========================================================================== */
 function actualizarResumen() {
     if (datosReserva.fecha) {
-        const fecha = new Date(datosReserva.fecha);
+        const fecha = new Date(datosReserva.fecha + 'T00:00:00'); // Evita desfase horario local
         const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
         document.getElementById('resumen-fecha-hora').textContent = `${fechaFormateada} a las ${datosReserva.hora || '--:--'}`;
     }
+
     if (datosReserva.tipoMesa === 'Terraza') {
         document.getElementById('resumen-piso').textContent = 'Terraza';
         document.getElementById('resumen-personas').textContent = '16 personas';
@@ -396,6 +462,16 @@ function actualizarResumen() {
     document.getElementById('resumen-cumpleanos').textContent = datosReserva.cumpleanos ? 'Sí' : 'No';
 }
 
+function validarDatosCliente() {
+    const nombre = document.getElementById('input-nombre')?.value.trim();
+    const telefono = document.getElementById('input-telefono')?.value.trim();
+    const email = document.getElementById('input-email')?.value.trim();
+    if (!nombre) return 'Por favor ingresa tu nombre completo.';
+    if (!telefono) return 'Por favor ingresa un teléfono de contacto.';
+    if (!email) return 'Por favor ingresa un correo electrónico válido.';
+    return '';
+}
+
 function finalizarReserva() {
     if (pasoActual !== 3) return;
 
@@ -405,67 +481,56 @@ function finalizarReserva() {
         return;
     }
 
-    // 1. Terminar de capturar los datos del cliente
     datosReserva.cliente.nombre = document.getElementById('input-nombre').value.trim();
     datosReserva.cliente.telefono = document.getElementById('input-telefono').value.trim();
     datosReserva.cliente.email = document.getElementById('input-email').value.trim();
     datosReserva.cliente.comentarios = document.getElementById('input-comentarios').value.trim();
 
-    // 2. UX: Deshabilitar el botón de confirmación para evitar envíos duplicados
     const btnConfirmar = document.querySelector('#form-confirmar-reserva button[type="submit"]');
     const textoOriginalBtn = btnConfirmar ? btnConfirmar.innerHTML : 'Confirmar Reserva';
-    
+
     if (btnConfirmar) {
         btnConfirmar.disabled = true;
         btnConfirmar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...`;
     }
 
-    // 3. Conectar los cables: Enviar el objeto datosReserva a Node.js
     fetch('/api/reservas', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(datosReserva) // Mandamos TODA la estructura limpia
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosReserva)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error en el servidor al procesar la reserva.');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Éxito total: El backend nos devuelve la reserva creada con su ID auto-generado
-        mostrarMensajeConfirmacion(
-            'success', 
-            `¡Reserva registrada con éxito, ${datosReserva.cliente.nombre}! Código de atención: ${data.reserva.id}.`
-        );
-        
-        // Redireccionar al inicio o limpiar el flujo tras 4 segundos
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 4000);
-    })
-    .catch(err => {
-        console.error('Error al enviar la reserva:', err);
-        mostrarMensajeConfirmacion('danger', 'Hubo un problema de conexión con el servidor. Inténtalo de nuevo por favor.');
-        
-        // UX: Si falló, reactivamos el botón para que el usuario pueda reintentar
-        if (btnConfirmar) {
-            btnConfirmar.disabled = false;
-            btnConfirmar.innerHTML = textoOriginalBtn;
-        }
-    });
+        .then(response => {
+            if (!response.ok) throw new Error('Error en el servidor.');
+            return response.json();
+        })
+        .then(data => {
+            mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito! Código: ${data.reserva.id}.`);
+            setTimeout(() => { window.location.href = 'index.html'; }, 4000);
+        })
+        .catch(err => {
+            console.error(err);
+            mostrarMensajeConfirmacion('danger', 'Hubo un problema de conexión. Inténtalo de nuevo.');
+            if (btnConfirmar) {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerHTML = textoOriginalBtn;
+            }
+        });
+}
+
+function mostrarMensajeConfirmacion(tipo, mensaje) {
+    const alerta = document.getElementById('confirmacion-alerta');
+    if (!alerta) return;
+    alerta.className = `alert alert-${tipo}`;
+    alerta.textContent = mensaje;
+    alerta.classList.remove('d-none');
 }
 
 function mostrarAlerta(mensaje) {
-    // Remover alertas previas para evitar acumulación
     document.querySelectorAll('.alert.alert-warning').forEach(alerta => alerta.remove());
-
     const alerta = document.createElement('div');
     alerta.className = 'alert alert-warning alert-dismissible fade show';
     alerta.style.cssText = 'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px;';
-    alerta.innerHTML = `\n        <i class="bi bi-exclamation-triangle me-2"></i>\n        ${mensaje}\n        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>\n    `;
+    alerta.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
     document.body.appendChild(alerta);
     setTimeout(() => { if (alerta.parentNode) alerta.remove(); }, 5000);
 }
