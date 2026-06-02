@@ -1,5 +1,5 @@
 ﻿/* ==========================================================================
-   VARIABLES GLOBALES Y CONFIGURACIÓN
+    VARIABLES GLOBALES Y CONFIGURACIÓN
    ========================================================================== */
 let pasoActual = 1;
 let modalFecha; // Instancia global del modal de Bootstrap
@@ -41,7 +41,7 @@ const mesasDisponiblesPorPiso = {
 };
 
 /* ==========================================================================
-   LANZADOR PRINCIPAL (DOM READY UNIFICADO)
+    LANZADOR PRINCIPAL (DOM READY UNIFICADO)
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Inicializar componentes del Wizard y selectores
@@ -71,10 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /* ==========================================================================
-   LÓGICA DEL CALENDARIO PROPIO (DOS MESES)
+    LÓGICA DEL CALENDARIO PROPIO (DOS MESES)
    ========================================================================== */
 function renderCustomCalendar() {
-    const year = currentDatePointer.getFullYear();
+const year = currentDatePointer.getFullYear();
     const monthIndex1 = currentDatePointer.getMonth();
 
     // El segundo recuadro siempre muestra el mes siguiente consecutivo
@@ -84,6 +84,21 @@ function renderCustomCalendar() {
     // Actualizar dinámicamente el título del año actual
     const titleEl = document.getElementById('calendar-year-title');
     if (titleEl) titleEl.innerText = `Reservas ${year}`;
+
+    // CONTROL DEL BOTÓN "ANTERIOR": Evitar que retroceda al pasado
+    const btnPrev = document.getElementById('btn-prev-months');
+    if (btnPrev) {
+        const hoy = new Date();
+        const anioActual = hoy.getFullYear();
+        const mesActual = hoy.getMonth();
+
+        // Si el calendario muestra el año/mes actual o uno anterior, ocultamos el botón
+        if (year < anioActual || (year === anioActual && monthIndex1 <= mesActual)) {
+            btnPrev.classList.add('d-none');
+        } else {
+            btnPrev.classList.remove('d-none');
+        }
+    }
 
     // Construir la cuadrícula para ambos bloques de meses
     buildMonthGrid(year, monthIndex1, 'month-title-1', 'days-grid-1');
@@ -161,7 +176,7 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
 }
 
 /* ==========================================================================
-   CONEXIÓN FORMULARIO MODAL -> WIZARD
+    CONEXIÓN FORMULARIO MODAL -> WIZARD
    ========================================================================== */
 function inicializarModalFecha() {
     const modalEl = document.getElementById('modalConfirmarFecha');
@@ -233,7 +248,7 @@ function abrirModalFecha() {
 }
 
 /* ==========================================================================
-   ARQUITECTURA WIZARD (PASOS)
+    ARQUITECTURA WIZARD (PASOS)
    ========================================================================== */
 function inicializarWizard() {
     const btnPrev = document.getElementById('btn-prev');
@@ -370,7 +385,7 @@ function actualizarNavegacion() {
 }
 
 /* ==========================================================================
-   CONTROLADORES DE SELECCIÓN (PISOS, MESAS Y CAPACIDADES)
+    CONTROLADORES DE SELECCIÓN (PISOS, MESAS Y CAPACIDADES)
    ========================================================================== */
 function inicializarSelectores() {
     document.querySelectorAll('.btn-persona').forEach(btn => {
@@ -454,7 +469,7 @@ function cambiarFiltroPiso(piso) {
 }
 
 /* ==========================================================================
-   RESUMEN FINAL Y ENVÍO AL SERVIDOR (FETCH)
+    RESUMEN FINAL Y ENVÍO AL SERVIDOR (FETCH)
    ========================================================================== */
 function actualizarResumen() {
     if (datosReserva.fecha) {
