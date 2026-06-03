@@ -343,6 +343,52 @@
 
 /* MAPA DE MESAS  */
 
+/* Estilos base para los recuadros de las mesas */
+.mesa {
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #212529;
+    background-color: #ffffff;
+    border: 2px solid #ced4da;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Efecto Hover sobre mesas habilitadas */
+.mesa:hover:not(.mesa-bloqueada) {
+    border-color: #0d6efd;
+    color: #0d6efd;
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Estado: Mesa Seleccionada */
+.mesa.selected {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #ffffff !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* Estado: Mesa Bloqueada (Gestionado automáticamente por tu JS) */
+.mesa-bloqueada {
+    background-color: #e9ecef !important;
+    color: #adb5bd !important;
+    border-color: #dee2e6 !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .mesas-container {
     background: #f8f9fa;
     border-radius: var(--border-radius);

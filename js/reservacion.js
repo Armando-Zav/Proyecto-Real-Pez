@@ -27,16 +27,26 @@ const mesasDisponiblesPorPiso = {
     1: {
         1: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
         2: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
-        4: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
-        6: [7, 9, 11, 14, 13],
+        4: [7, 9, 11, 14],
+        6: [13],
         8: [13],
         10: []
     },
     2: {
-        1: [], 2: [], 4: [], 6: [], 8: [], 10: []
+        1: [19, 20, 21, 22, 23, 24, 25],
+        2: [19, 20, 21, 22, 23, 24, 25],
+        4: [19, 20, 21, 22, 23, 24, 25],
+        6: [16, 18],
+        8: [17],
+        10: [17]
     },
     3: {
-        1: [], 2: [], 4: [], 6: [], 8: [], 10: []
+        1: [27, 28],
+        2: [27, 28],
+        4: [27, 28],
+        6: [29, 31],
+        8: [26, 29, 30, 31],
+        10: [26, 30]
     }
 };
 
@@ -74,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
     LÓGICA DEL CALENDARIO PROPIO (DOS MESES)
    ========================================================================== */
 function renderCustomCalendar() {
-const year = currentDatePointer.getFullYear();
+    const year = currentDatePointer.getFullYear();
     const monthIndex1 = currentDatePointer.getMonth();
 
     // El segundo recuadro siempre muestra el mes siguiente consecutivo
@@ -388,34 +398,57 @@ function actualizarNavegacion() {
     CONTROLADORES DE SELECCIÓN (PISOS, MESAS Y CAPACIDADES)
    ========================================================================== */
 function inicializarSelectores() {
+    // 1. Cambiar cantidad de personas
     document.querySelectorAll('.btn-persona').forEach(btn => {
         btn.addEventListener('click', function () {
-            const personas = parseInt(this.getAttribute('data-cap'));
+            const personas = parseInt(this.getAttribute('data-cap'), 10);
             document.querySelectorAll('.btn-persona').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+
             datosReserva.personas = personas;
+
+            // Ejecuta tu función con la nueva cantidad
             filtrarMesasPorCapacidad(personas);
         });
     });
 
-    document.querySelectorAll('.btn-piso').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const piso = parseInt(this.getAttribute('data-piso')) || 1;
+    // 2. Cambiar de Piso
+    document.querySelectorAll('.btn-piso').forEach(boton => {
+        boton.addEventListener('click', function () {
             document.querySelectorAll('.btn-piso').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            cambiarFiltroPiso(piso);
+
+            // Asegúrate de tener las tres líneas para ocultar todos los pisos
+            document.getElementById('mapa-piso-1').classList.add('d-none');
+            document.getElementById('mapa-piso-2').classList.add('d-none');
+            document.getElementById('mapa-piso-3').classList.add('d-none'); // ← Agregar/Descomentar esta línea
+
+            // Mostrar el piso seleccionado
+            const pisoSeleccionado = parseInt(this.getAttribute('data-piso'), 10);
+            datosReserva.piso = pisoSeleccionado;
+
+            document.getElementById(`mapa-piso-${pisoSeleccionado}`).classList.remove('d-none');
+
+            // Volver a filtrar
+            filtrarMesasPorCapacidad(datosReserva.personas);
         });
     });
 
+    // 3. Click en una mesa (Tu lógica original con parseo numérico seguro)
     document.querySelectorAll('.mesa').forEach(mesa => {
         mesa.addEventListener('click', function () {
-            if (this.classList.contains('mesa-bloqueada')) return;
+            if (this.classList.contains('mesa-bloqueada') || this.disabled) return;
+
+            // Quita la selección de TODAS las mesas para que solo haya una activa
             document.querySelectorAll('.mesa').forEach(m => m.classList.remove('selected'));
             this.classList.add('selected');
-            datosReserva.mesa = this.textContent.trim();
+
+            // Guardamos el número de la mesa como un número entero
+            datosReserva.mesa = parseInt(this.textContent.trim(), 10);
         });
     });
 
+    // 4. Tu lógica de la terraza se queda exactamente igual...
     const checkboxConfirmarTerraza = document.getElementById('checkbox-confirmar-terrace');
     if (checkboxConfirmarTerraza) {
         checkboxConfirmarTerraza.addEventListener('change', function () {
@@ -435,25 +468,40 @@ function inicializarSelectores() {
 function filtrarMesasPorCapacidad(cantidad) {
     if (datosReserva.tipoMesa === 'Terraza') return;
 
-    const mesasDisponibles = mesasDisponiblesPorPiso[datosReserva.piso]?.[cantidad] || [];
+    const pisoActual = datosReserva.piso;
+    const mesasDisponibles = mesasDisponiblesPorPiso[pisoActual]?.[cantidad] || [];
 
-    document.querySelectorAll('.mesa').forEach(mesa => {
-        const numeroMesa = parseInt(mesa.textContent.trim());
+    // CRÍTICO: Buscamos solo dentro del contenedor del piso activo
+    const contenedorPiso = document.getElementById(`mapa-piso-${pisoActual}`);
+    if (!contenedorPiso) return;
+
+    // Seleccionamos solo las mesas de ESTE piso
+    contenedorPiso.querySelectorAll('.mesa').forEach(mesa => {
+        const numeroMesa = parseInt(mesa.textContent.trim(), 10);
 
         if (mesasDisponibles.includes(numeroMesa)) {
+            // Habilitar mesa
             mesa.classList.remove('mesa-bloqueada');
             mesa.style.pointerEvents = 'auto';
             mesa.style.opacity = '1';
+            mesa.disabled = false; // Añadido por seguridad nativa del navegador
         } else {
+            // Bloquear mesa
             mesa.classList.add('mesa-bloqueada');
             mesa.classList.remove('selected');
             mesa.style.pointerEvents = 'none';
             mesa.style.opacity = '0.5';
-            if (datosReserva.mesa === mesa.textContent.trim()) datosReserva.mesa = null;
+            mesa.disabled = true;
+
+            // Si la mesa que se bloqueó era la que estaba seleccionada, la limpiamos de forma numérica
+            if (datosReserva.mesa === numeroMesa) {
+                datosReserva.mesa = null;
+            }
         }
     });
 
-    if (mesasDisponibles.length === 0) {
+    // Tu alerta original intacta
+    if (cantidad > 0 && mesasDisponibles.length === 0) {
         mostrarAlerta(`No hay mesas disponibles para ${cantidad} personas en este piso. Intenta con otro piso.`);
     }
 }
@@ -564,4 +612,56 @@ function mostrarAlerta(mensaje) {
     alerta.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
     document.body.appendChild(alerta);
     setTimeout(() => { if (alerta.parentNode) alerta.remove(); }, 5000);
+}
+
+function actualizarDisponibilidadMesas() {
+    const piso = datosReserva.piso;
+    const personas = datosReserva.personas;
+
+    // 1. Si el usuario aún no selecciona la cantidad de personas, dejamos las mesas bloqueadas
+    if (personas === 0) {
+        deshabilitarTodasLasMesas(piso);
+        return;
+    }
+
+    // 2. Obtener el arreglo de mesas permitidas para este piso y cantidad de personas
+    const mesasPermitidas = mesasDisponiblesPorPiso[piso]?.[personas] || [];
+
+    // 3. Buscar el contenedor del piso actual
+    const contenedorPiso = document.getElementById(`mapa-piso-${piso}`);
+    if (!contenedorPiso) return;
+
+    // 4. Recorrer cada botón de mesa dentro de este piso
+    const botonesMesas = contenedorPiso.querySelectorAll('.mesa');
+
+    botonesMesas.forEach(boton => {
+        // Convertimos el número visual del botón a un entero (ej: "16" -> 16)
+        const numeroMesa = parseInt(boton.textContent.trim(), 10);
+
+        // 5. Si el número está en la lista de permitidas, se habilita; si no, se bloquea
+        if (mesasPermitidas.includes(numeroMesa)) {
+            boton.disabled = false;
+            boton.classList.remove('mesa-bloqueada'); // Por si manejas esta clase en CSS
+        } else {
+            boton.disabled = true;
+            boton.classList.add('mesa-bloqueada');
+
+            // Si la mesa que estaba seleccionada se acaba de bloquear, la deseleccionamos
+            if (datosReserva.mesa === numeroMesa) {
+                boton.classList.remove('selected'); // O la clase de selección que uses
+                datosReserva.mesa = null;
+            }
+        }
+    });
+}
+
+// Función auxiliar para bloquear todo por defecto si no han elegido personas
+function deshabilitarTodasLasMesas(piso) {
+    const contenedorPiso = document.getElementById(`mapa-piso-${piso}`);
+    if (contenedorPiso) {
+        contenedorPiso.querySelectorAll('.mesa').forEach(boton => {
+            boton.disabled = true;
+            boton.classList.add('mesa-bloqueada');
+        });
+    }
 }

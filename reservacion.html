@@ -46,7 +46,8 @@
                         <div class="wizard-step-content active calendar-container" id="step-1">
                             <div class="custom-calendar-wrapper">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <button type="button" id="btn-prev-months" class="btn btn-outline-primary btn-sm d-none">
+                                    <button type="button" id="btn-prev-months"
+                                        class="btn btn-outline-primary btn-sm d-none">
                                         <i class="bi bi-chevron-left"></i> Anterior
                                     </button>
                                     <h4 id="calendar-year-title" class="fw-bold text-primary m-0"
@@ -104,7 +105,6 @@
                                     </h3>
                                 </div>
                                 <div class="card-body p-4">
-                                    <!-- Selector de personas -->
                                     <div class="personas-selector mb-4" id="personas-selector-block">
                                         <h5 class="text-center mb-3">¿Cuántas personas?</h5>
                                         <div class="d-flex justify-content-center gap-2 flex-wrap"
@@ -125,7 +125,6 @@
                                         <input type="hidden" id="cantidad-personas-elegida" value="">
                                     </div>
 
-                                    <!-- Selector de piso -->
                                     <div class="piso-selector mb-4" id="piso-selector-block">
                                         <h5 class="text-center mb-3">Selecciona el piso</h5>
                                         <div class="d-flex justify-content-center gap-2">
@@ -138,56 +137,51 @@
                                         </div>
                                     </div>
 
-                                    <!-- Mapa de mesas -->
                                     <div class="mesas-container" id="mesas-disponibles-container">
                                         <h5 class="text-center mb-3">Mesas disponibles</h5>
-                                        <div class="mesas-grid-wrapper">
-                                            <div class="grid-container mx-auto" id="mapa-piso-1">
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 4; grid-row: 2;" data-capacidad="2">1</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 6; grid-row: 2;" data-capacidad="2">2</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 4; grid-row: 4;" data-capacidad="2">3</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 6; grid-row: 4;" data-capacidad="2">4</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 4; grid-row: 6;" data-capacidad="2">5</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 6; grid-row: 6;" data-capacidad="2">6</button>
-                                                <button type="button" class="mesa mesa-md"
-                                                    style="grid-column: 7 / span 2; grid-row: 8;"
-                                                    data-capacidad="4">7</button>
-                                                <button type="button" class="mesa mesa-md"
-                                                    style="grid-column: 7 / span 2; grid-row: 10;"
-                                                    data-capacidad="4">9</button>
-                                                <button type="button" class="mesa mesa-md"
-                                                    style="grid-column: 7 / span 2; grid-row: 12;"
-                                                    data-capacidad="4">11</button>
-                                                <button type="button" class="mesa mesa-md"
-                                                    style="grid-column: 7 / span 2; grid-row: 14;"
-                                                    data-capacidad="4">14</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 10; grid-row: 9;" data-capacidad="2">8</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 10; grid-row: 11;"
-                                                    data-capacidad="2">10</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 10; grid-row: 13;"
-                                                    data-capacidad="2">12</button>
-                                                <button type="button" class="mesa mesa-sm"
-                                                    style="grid-column: 10; grid-row: 15;"
-                                                    data-capacidad="2">15</button>
-                                                <button type="button" class="mesa mesa-lg"
-                                                    style="grid-column: 3 / span 3; grid-row: 14;"
-                                                    data-capacidad="6">13</button>
-                                                <div class="escalera-grid"
-                                                    style="grid-column: 2 / span 2; grid-row: 9 / span 3;">
-                                                    <i class="bi bi-chevron-double-up"></i>
-                                                </div>
-                                            </div>
+
+                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto"
+                                            id="mapa-piso-1" style="max-width: 650px;">
+                                            <button type="button" class="mesa" data-capacidad="2">1</button>
+                                            <button type="button" class="mesa" data-capacidad="2">2</button>
+                                            <button type="button" class="mesa" data-capacidad="2">3</button>
+                                            <button type="button" class="mesa" data-capacidad="2">4</button>
+                                            <button type="button" class="mesa" data-capacidad="2">5</button>
+                                            <button type="button" class="mesa" data-capacidad="2">6</button>
+                                            <button type="button" class="mesa" data-capacidad="4">7</button>
+                                            <button type="button" class="mesa" data-capacidad="2">8</button>
+                                            <button type="button" class="mesa" data-capacidad="4">9</button>
+                                            <button type="button" class="mesa" data-capacidad="2">10</button>
+                                            <button type="button" class="mesa" data-capacidad="4">11</button>
+                                            <button type="button" class="mesa" data-capacidad="2">12</button>
+                                            <button type="button" class="mesa" data-capacidad="8">13</button>
+                                            <button type="button" class="mesa" data-capacidad="4">14</button>
+                                            <button type="button" class="mesa" data-capacidad="2">15</button>
+                                        </div>
+                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto d-none"
+                                            id="mapa-piso-2" style="max-width: 650px;">
+                                            <button type="button" class="mesa" data-capacidad="6">16</button>
+                                            <button type="button" class="mesa" data-capacidad="10">17</button>
+                                            <button type="button" class="mesa" data-capacidad="6">18</button>
+                                            <button type="button" class="mesa" data-capacidad="4">19</button>
+                                            <button type="button" class="mesa" data-capacidad="4">20</button>
+                                            <button type="button" class="mesa" data-capacidad="4">21</button>
+                                            <button type="button" class="mesa" data-capacidad="4">22</button>
+                                            <button type="button" class="mesa" data-capacidad="4">23</button>
+                                            <button type="button" class="mesa" data-capacidad="4">24</button>
+                                            <button type="button" class="mesa" data-capacidad="4">25</button>
+                                        </div>
+                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto d-none"
+                                            id="mapa-piso-3" style="max-width: 650px;">
+                                            <button type="button" class="mesa" data-capacidad="10">26</button>
+                                            <button type="button" class="mesa" data-capacidad="4">27</button>
+                                            <button type="button" class="mesa" data-capacidad="4">28</button>
+                                            <button type="button" class="mesa" data-capacidad="8">29</button>
+                                            <button type="button" class="mesa" data-capacidad="10">30</button>
+                                            <button type="button" class="mesa" data-capacidad="8">31</button>
                                         </div>
                                     </div>
+
                                     <div id="terraza-politicas" class="d-none">
                                         <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
                                             <h5 class="mb-4 text-primary fw-bold">
@@ -196,7 +190,6 @@
                                             </h5>
                                             <p class="text-muted mb-4">Al elegir la terraza aceptas las siguientes
                                                 condiciones:</p>
-
                                             <ul class="list-group list-group-flush bg-transparent">
                                                 <li
                                                     class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
@@ -214,34 +207,20 @@
                                                     class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
                                                     <div><strong>Pago total en 3 días:</strong> la reserva debe pagarse
-                                                        en su totalidad dentro de los 3 días siguientes.</div>
+                                                        por completo dentro de las 72 horas.</div>
                                                 </li>
                                                 <li
                                                     class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                                                    <div><strong>Cancelación automática:</strong> si no se paga el total
-                                                        en ese plazo, la reserva será cancelada.</div>
-                                                </li>
-                                                <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
-                                                    <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                                                    <div><strong>Reserva definitiva:</strong> la terraza se considera
-                                                        reservada solo después de recibir el pago completo.</div>
-                                                </li>
-                                                <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
-                                                    <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
-                                                    <div><strong>Sin devolución parcial:</strong> si la reserva se
-                                                        cancela por falta de pago, no aplica devolución parcial.</div>
+                                                    <div><strong>Cancelación automática:</strong> si no se liquida a
+                                                        tiempo, el sistema liberará el espacio.</div>
                                                 </li>
                                             </ul>
-
                                             <div class="alert alert-warning mt-4 small border-0 shadow-sm">
                                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                                 Esta sección solo muestra las condiciones. No se realiza ningún cálculo
                                                 ni pago automático desde esta página.
                                             </div>
-
                                             <div class="d-flex justify-content-start align-items-center mt-4">
                                                 <div class="form-check mb-0">
                                                     <input class="form-check-input" type="checkbox"
