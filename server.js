@@ -1,129 +1,304 @@
+require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
 const express = require('express');
+const mysql = require('mysql2');
+const db = require('./conexion'); // Importamos la conexión a la base de datos
 const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// 1. Inicializamos tu servidor con tus 10 registros reales de la captura
-let baseDatosTemporalReservas = [
-    { id: 'R-001', fecha: '2026-05-15', hora: '13:00', personas: 4, estado: 'Confirmada', tipoMesa: 'Normal', piso: 1, mesa: '4', cliente: { nombre: 'Mariela Torres', telefono: '+51 987 654 321' } },
-    { id: 'R-002', fecha: '2026-05-15', hora: '14:30', personas: 2, estado: 'Pendiente', tipoMesa: 'Normal', piso: 1, mesa: '2', cliente: { nombre: 'Carlos Quispe', telefono: '+51 976 543 210' } },
-    { id: 'R-003', fecha: '2026-05-16', hora: '12:00', personas: 6, estado: 'Pendiente', tipoMesa: 'Normal', piso: 1, mesa: '9', cliente: { nombre: 'Lucía Mendoza', telefono: '+51 965 432 109' } },
-    { id: 'R-004', fecha: '2026-05-16', hora: '13:30', personas: 3, estado: 'Confirmada', tipoMesa: 'Normal', piso: 1, mesa: '3', cliente: { nombre: 'Rodrigo Salinas', telefono: '+51 954 321 098' } },
-    { id: 'R-005', fecha: '2026-05-17', hora: '19:00', personas: 2, estado: 'Cancelada', tipoMesa: 'Normal', piso: 1, mesa: '1', cliente: { nombre: 'Ana Velásquez', telefono: '+51 943 210 987' } },
-    { id: 'R-006', fecha: '2026-05-17', hora: '20:00', personas: 5, estado: 'Pendiente', tipoMesa: 'Normal', piso: 1, mesa: '5', cliente: { nombre: 'Jorge Paredes', telefono: '+51 932 109 876' } },
-    { id: 'R-007', fecha: '2026-05-18', hora: '13:00', personas: 4, estado: 'Confirmada', tipoMesa: 'Normal', piso: 1, mesa: '8', cliente: { nombre: 'Sofía Cárdenas', telefono: '+51 921 098 765' } },
-    { id: 'R-008', fecha: '2026-05-18', hora: '14:00', personas: 8, estado: 'Pendiente', tipoMesa: 'Normal', piso: 1, mesa: '13', cliente: { nombre: 'Miguel Flores', telefono: '+51 910 987 654' } },
-    { id: 'R-009', fecha: '2026-05-19', hora: '12:30', personas: 2, estado: 'Confirmada', tipoMesa: 'Normal', piso: 1, mesa: '2', cliente: { nombre: 'Patricia Huanca', telefono: '+51 999 888 777' } },
-    { id: 'R-010', fecha: '2026-05-19', hora: '19:30', personas: 3, estado: 'Cancelada', tipoMesa: 'Normal', piso: 1, mesa: '3', cliente: { nombre: 'Daniel Chávez', telefono: '+51 888 777 666' } }
-];
-
-// Middleware para entender formatos JSON
+// Middleware para entender formatos JSON (¡Esencial para leer req.body!)
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Servir los archivos estáticos (tu HTML, CSS y JS actuales) directamente desde la raíz
+// Servir los archivos estáticos directamente desde la raíz
 app.use(express.static(path.join(__dirname, './')));
 
-// Ruta principal: Cuando entren a http://localhost:3000 cargará tu index.html
+// Ruta de prueba de conexión
+app.get('/probar-bd', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT NOW() as fecha_servidor');
+        res.json({
+            mensaje: "¡Conexión exitosa desde Node.js a Railway!",
+            horaServidor: rows[0].fecha_servidor
+        });
+    } catch (error) {
+        console.error("Error al conectar a la BD:", error);
+        res.status(500).json({ error: "Error de conexión con la base de datos" });
+    }
+});
+
+// Ruta principal: Carga tu index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// =========================================================================
+// ENDPOINT 1: CREAR RESERVA (POST) -> Guarda directamente en MySQL
+// =========================================================================
+app.post('/api/reservas', async (req, res) => {
+    try {
+        const cuerpo = req.body;
+
+        // Extraemos y adaptamos los campos requeridos por la base de datos
+        const nombre = cuerpo.cliente?.nombre || 'Sin nombre';
+        const telefono = cuerpo.cliente?.telefono || '';
+        const email = cuerpo.cliente?.email || 'correo@temporal.com';
+        
+        const fecha = cuerpo.fecha;
+        const hora = cuerpo.hora;
+        const tipoMesa = cuerpo.tipoMesa;
+        const mesa = cuerpo.mesa;
+        
+        // Regla de negocio: Si es Terraza, fuerza 16 personas y piso nulo
+        const personas = tipoMesa === 'Terraza' ? 16 : (cuerpo.personas || 2);
+        const pisoBD = tipoMesa === 'Terraza' ? null : (cuerpo.piso || 1);
+        
+        // Conversión a tipos de datos compatibles con MySQL
+        const esCumpleanosBD = (cuerpo.cumpleanos === 'Sí' || cuerpo.cumpleanos === true) ? 1 : 0;
+        const estadoBD = 'PENDIENTE'; // Entra para revisión por defecto
+
+        const queryInsert = `
+            INSERT INTO reservas 
+            (nombre_cliente, telefono, correo, fecha_reserva, hora_reserva, num_comensales, tipo_zona, piso, numero_mesa, es_cumpleanos, estado_actual) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const [result] = await db.query(queryInsert, [
+            nombre, telefono, email, fecha, hora, personas, tipoMesa, pisoBD, mesa, esCumpleanosBD, estadoBD
+        ]);
+
+        // Generamos el código estético basado en el ID auto-incrementado insertado
+        const codigoEstetico = `R-${String(result.insertId).padStart(3, '0')}`;
+
+        console.log(`\n==================================================`);
+        console.log(`🐟 ¡Nueva Reserva Registrada en MySQL!`);
+        console.log(`ID Real: ${result.insertId} -> Código: ${codigoEstetico}`);
+        console.log(`Cliente: ${nombre}`);
+        console.log(`==================================================\n`);
+        res.status(201).json({
+            mensaje: 'Reserva procesada correctamente.',
+            reserva: { id: codigoEstetico }
+        });
+
+    } catch (error) {
+        console.error('Error al insertar reserva en la BD:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor al resguardar la reserva.' });
+    }
+});
+
+// =========================================================================
+// ENDPOINT 2: LISTAR RESERVAS (GET) -> Lee desde MySQL y formatea para el Dashboard
+// =========================================================================
+app.get('/api/reservas', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM reservas ORDER BY id DESC');
+
+        // Mapeamos los registros de la BD al formato JSON exacto que tu frontend ya conoce
+        const reservasMapeadas = rows.map(row => {
+            // Formatear la hora de HH:MM:SS a HH:MM si viene como string largo
+            const horaFormateada = row.hora_reserva ? String(row.hora_reserva).substring(0, 5) : "12:00";
+            // Formatear la fecha a YYYY-MM-DD limpiando el huso horario
+            const fechaFormateada = row.fecha_reserva ? new Date(row.fecha_reserva).toISOString().split('T')[0] : "";
+
+            return {
+                id: `R-${String(row.id).padStart(3, '0')}`,
+                fecha: fechaFormateada,
+                hora: horaFormateada,
+                personas: row.num_comensales,
+                tipoMesa: row.tipo_zona,
+                piso: row.piso,
+                mesa: row.numero_mesa,
+                cumpleanos: row.es_cumpleanos ? 'Sí' : 'No',
+                // PENDIENTE -> Pendiente, CONFIRMADA -> Confirmada
+                estado: row.estado_actual.charAt(0) + row.estado_actual.slice(1).toLowerCase(),
+                cliente: {
+                    nombre: row.nombre_cliente,
+                    telefono: row.telefono,
+                    email: row.correo
+                }
+            };
+        });
+
+        res.json(reservasMapeadas);
+    } catch (error) {
+        console.error("Error al consultar reservas en la BD:", error);
+        res.status(500).json({ error: "Error al obtener las reservas." });
+    }
+});
+
+// =========================================================================
+// ENDPOINTS 3 Y 4: ACTUALIZAR ESTADO (PUT / PATCH) -> Modifican la BD usando el ID numérico
+// =========================================================================
+app.put('/api/reservas/:id/estado', async (req, res) => {
+    try {
+        const { id } = req.params; // Viene como "R-005"
+        const { estado } = req.body; // Viene como "Confirmada" o "Cancelada"
+
+        // Convertimos el código estético "R-005" al ID entero de la BD (5)
+        const idNumerico = parseInt(id.replace('R-', ''), 10);
+        const estadoBD = estado.toUpperCase(); // Cambia a 'CONFIRMADA' o 'CANCELADA'
+
+        const [result] = await db.query('UPDATE reservas SET estado_actual = ? WHERE id = ?', [estadoBD, idNumerico]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, mensaje: 'No se encontró la reserva.' });
+        }
+
+        console.log(`[Base de Datos] Reserva ${id} (ID: ${idNumerico}) modificada a: ${estadoBD}`);
+        res.json({ success: true, mensaje: 'Estado actualizado correctamente en MySQL.' });
+    } catch (error) {
+        console.error("Error al actualizar estado (PUT):", error);
+        res.status(500).json({ success: false, error: "Error interno." });
+    }
+});
+
+app.patch('/api/reservas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nuevoEstado } = req.body;
+
+        const idNumerico = parseInt(id.replace('R-', ''), 10);
+        const estadoBD = nuevoEstado.toUpperCase();
+
+        const [result] = await db.query('UPDATE reservas SET estado_actual = ? WHERE id = ?', [estadoBD, idNumerico]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ exito: false, mensaje: 'Reserva no encontrada' });
+        }
+
+        console.log(`[Base de Datos] Reserva ${id} corregida vía PATCH a: ${estadoBD}`);
+        res.json({ exito: true });
+    } catch (error) {
+        console.error("Error al actualizar estado (PATCH):", error);
+        res.status(500).json({ exito: false, error: "Error interno." });
+    }
+});
+
+// ENDPOINT PARA EL DASHBOARD: Obtener todas las reservas mapeadas
+app.get('/api/reservas', async (req, res) => {
+    try {
+        // Traemos todas las reservas ordenadas por la más reciente
+        const [rows] = await db.query(`SELECT id, DATE_FORMAT(fecha_reserva, '%Y-%m-%d') AS fecha_reserva, hora_reserva, num_comensales, tipo_zona, piso, numero_mesa, es_cumpleanos, estado_actual, nombre_cliente, telefono, correo FROM reservas ORDER BY fecha_creacion DESC`);
+        
+        // Transformamos las filas planas de MySQL al formato exacto que pide tu dashboard.js
+        const reservasMapeadas = rows.map(row => {
+            const codigoEstetico = `R-${String(row.id).padStart(3, '0')}`;
+            const fechaString = row.fecha_reserva instanceof Date 
+                ? row.fecha_reserva.toISOString().split('T')[0] 
+                : row.fecha_reserva;
+            const estadoFormateado = row.estado_actual.charAt(0) + row.estado_actual.slice(1).toLowerCase();
+
+            return {
+                id: codigoEstetico,
+                fecha: fechaString,
+                hora: row.hora_reserva ? String(row.hora_reserva).substring(0, 5) : "00:00",
+                personas: row.num_comensales,
+                tipoMesa: row.tipo_zona,
+                piso: row.piso,
+                mesa: row.numero_mesa,
+                cumpleanos: row.es_cumpleanos ? 'Sí' : 'No',
+                estado: estadoFormateado,
+                cliente: {
+                    nombre: row.nombre_cliente,
+                    telefono: row.telefono,
+                    correo: row.correo
+                }
+            };
+        });
+
+        res.json(reservasMapeadas); // Enviamos el arreglo perfecto al frontend
+        
+    } catch (error) {
+        console.error("Error al obtener reservas para el dashboard:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+// Endpoint para actualizar el estado desde las acciones del Admin
+app.put('/api/reservas/:id/estado', async (req, res) => {
+    const { id } = req.params; // Viene como "R-001"
+    const { estado } = req.body; // Viene como "Confirmada" o "Cancelada"
+
+    try {
+        // Extraemos solo el número del ID (Ej: "R-001" -> 1)
+        const idNumerico = parseInt(id.replace('R-', ''), 10);
+        
+        // Convertimos el estado a mayúsculas para que calce con el ENUM de MySQL
+        const estadoBD = estado.toUpperCase(); // "CONFIRMADA" o "CANCELADA"
+
+        const query = 'UPDATE reservas SET estado_actual = ? WHERE id = ?';
+        await db.query(query, [estadoBD, idNumerico]);
+
+        res.json({ ok: true, mensaje: "Estado actualizado correctamente" });
+    } catch (error) {
+        console.error("Error al actualizar estado:", error);
+        res.status(500).json({ ok: false, error: "No se pudo actualizar el estado" });
+    }
+});
+
+// ENDPOINT PARA CREAR UNA NUEVA RESERVA
+app.post('/api/reservas', async (req, res) => {
+    try {
+        // 1. Desestructuramos el objeto que viene desde el frontend
+        const { fecha, hora, personas, tipoMesa, piso, mesa, cumpleanos, estado, cliente } = req.body;
+
+        // Validaciones básicas de seguridad por si acaso
+        if (!fecha || !hora || !personas || !cliente?.nombre || !cliente?.telefono) {
+            return res.status(400).json({ ok: false, error: "Faltan campos obligatorios." });
+        }
+
+        // 2. Adaptar los datos al formato de tu Base de Datos
+        // Convertimos 'Confirmada' -> 'CONFIRMADA' para el ENUM de MySQL
+        const estadoBD = estado ? estado.toUpperCase() : 'CONFIRMADA'; 
+        
+        // Convertimos 'Sí'/'No' a 1 o 0 para la columna es_cumpleanos (TINYINT/BOOLEAN)
+        const esCumpleanosBD = (cumpleanos === 'Sí' || cumpleanos === true) ? 1 : 0;
+        
+        // Si es terraza, el piso va como null, sino agarra el piso enviado o por defecto 1
+        const pisoBD = tipoMesa === 'Terraza' ? null : (piso || 1);
+
+        // 3. Consulta SQL usando los mismos nombres de columna que vimos en tu GET
+        const query = `
+            INSERT INTO reservas 
+            (fecha_reserva, hora_reserva, num_comensales, tipo_zona, piso, numero_mesa, es_cumpleanos, estado_actual, nombre_cliente, telefono) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        // Ejecutamos la inserción pasando el arreglo de valores en orden
+        const [result] = await db.query(query, [
+            fecha,
+            hora,
+            personas,
+            tipoMesa,
+            pisoBD,
+            mesa,
+            esCumpleanosBD,
+            estadoBD,
+            cliente.nombre,
+            cliente.telefono
+        ]);
+
+        // 4. Formateamos el ID generado (Ej: si se insertó el id 4, devolvemos "R-004")
+        // Esto es vital para que tu "alert" del frontend no se rompa al leer data.reserva?.id
+        const codigoEstetico = `R-${String(result.insertId).padStart(3, '0')}`;
+
+        // Respondemos con éxito al cliente
+        res.status(201).json({ 
+            ok: true, 
+            mensaje: "Reserva registrada con éxito en MySQL",
+            reserva: { id: codigoEstetico } 
+        });
+        
+    } catch (error) {
+        console.error("Error crítico al insertar la reserva:", error);
+        res.status(500).json({ ok: false, error: "Error interno al guardar la reserva en la base de datos" });
+    }
 });
 
 // Iniciamos el servidor
 app.listen(PORT, () => {
     console.log(`\n==================================================`);
     console.log(` Surf activo en: http://localhost:${PORT} 🐟🔥`);
+    console.log(` SQL vinculando directamente a Railway de forma real.`);
     console.log(`==================================================\n`);
-});
-
-// ENDPOINT: Recibir y procesar la reserva de la cebichería
-app.post('/api/reservas', (req, res) => {
-    try {
-        const cuerpo = req.body;
-
-        // Estructuramos el nuevo registro usando los datos del frontend
-        const nuevaReserva = {
-            id: `R-00${baseDatosTemporalReservas.length + 1}`, // ID Auto-generado dinámico
-            fecha: cuerpo.fecha,
-            hora: cuerpo.hora,
-            tipoMesa: cuerpo.tipoMesa,
-            cumpleanos: cuerpo.cumpleanos,
-            personas: cuerpo.tipoMesa === 'Terraza' ? 16 : cuerpo.personas,
-            piso: cuerpo.piso,
-            mesa: cuerpo.mesa,
-            estado: 'Pendiente', // Por defecto entra para revisión del administrador
-            cliente: {
-                nombre: cuerpo.cliente.nombre,
-                telefono: cuerpo.cliente.telefono,
-                email: cuerpo.cliente.email,
-                comentarios: cuerpo.cliente.comentarios
-            }
-        };
-
-        // Guardamos el registro en nuestro arreglo local
-        baseDatosTemporalReservas.push(nuevaReserva);
-
-        // Log en la consola de Node para verificar en tiempo real que los datos ingresaron
-        console.log(`\n==================================================`);
-        console.log(`🐟 ¡Nueva Reserva Recibida Exitosamente!`);
-        console.log(`Cliente: ${nuevaReserva.cliente.nombre}`);
-        console.log(`Mesa/Zona: ${nuevaReserva.mesa} (${nuevaReserva.tipoMesa})`);
-        console.log(`==================================================\n`);
-
-        // Respondemos con estatus HTTP 201 (Creado) enviando el objeto de confirmación
-        res.status(201).json({
-            mensaje: 'Reserva procesada correctamente.',
-            reserva: nuevaReserva
-        });
-
-    } catch (error) {
-        console.error('Error al procesar reserva:', error);
-        res.status(500).json({ mensaje: 'Error interno del servidor al resguardar la reserva.' });
-    }
-});
-
-// ENDPOINT SECUNDARIO: Para que el Dashboard pueda consultar la lista actualizada
-app.get('/api/reservas', (req, res) => {
-    res.json(baseDatosTemporalReservas);
-});
-
-app.put('/api/reservas/:id/estado', (req, res) => {
-    const { id } = req.params;          // Capturamos el ID de la URL (ej: R-001)
-    const { estado } = req.body;      // Capturamos el nuevo estado enviado en el cuerpo
-
-    // Buscamos la reserva dentro de tu arreglo temporal
-    const reserva = baseDatosTemporalReservas.find(r => r.id === id); //
-
-    if (!reserva) {
-        return res.status(404).json({
-            success: false,
-            mensaje: `No se encontró ninguna reserva con el ID: ${id}`
-        });
-    }
-
-    // Modificamos el estado en el servidor
-    reserva.estado = estado;
-
-    console.log(`[Servidor] Reserva ${id} modificada a estado: ${estado}`);
-
-    // Respondemos con éxito
-    res.json({
-        success: true,
-        mensaje: 'Estado actualizado correctamente en el servidor.',
-        reserva
-    });
-});
-
-app.patch('/api/reservas/:id', (req, res) => {
-    const { id } = req.params;
-    const { nuevoEstado } = req.body; // Recibe 'Confirmada' o 'Cancelada'
-
-    const reserva = baseDatosTemporalReservas.find(r => r.id === id);
-
-    if (reserva) {
-        reserva.estado = nuevoEstado;
-        console.log(`[Actualización] Reserva ${id} cambió a: ${nuevoEstado}`);
-        res.json({ exito: true, reserva });
-    } else {
-        res.status(404).json({ exito: false, mensaje: 'Reserva no encontrada' });
-    }
 });

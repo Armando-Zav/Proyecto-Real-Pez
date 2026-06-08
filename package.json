@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/Armando-Zav/Proyecto-Real-Pez#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
