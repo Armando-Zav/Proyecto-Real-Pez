@@ -4,9 +4,11 @@ const mysql = require('mysql2');
 const db = require('./conexion'); // Importamos la conexión a la base de datos
 const path = require('path');
 const app = express();
-const PORT = 3000;
 
-// Middleware para entender formatos JSON (¡Esencial para leer req.body!)
+// CORRECCIÓN 1: Railway inyecta su propio puerto. Si no existe, usa 3000 localmente.
+const PORT = process.env.PORT || 3000;
+
+// Middleware para entender formatos JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,28 +37,28 @@ app.get('/', (req, res) => {
 
 // =========================================================================
 // ENDPOINT 1: CREAR RESERVA (POST) -> Guarda directamente en MySQL
+// CORRECCIÓN 2: Rutas POST unificadas con validaciones de seguridad
 // =========================================================================
 app.post('/api/reservas', async (req, res) => {
     try {
-        const cuerpo = req.body;
+        const { fecha, hora, personas, tipoMesa, piso, mesa, cumpleanos, estado, cliente } = req.body;
 
-        // Extraemos y adaptamos los campos requeridos por la base de datos
-        const nombre = cuerpo.cliente?.nombre || 'Sin nombre';
-        const telefono = cuerpo.cliente?.telefono || '';
-        const email = cuerpo.cliente?.email || 'correo@temporal.com';
+        // Validaciones básicas de seguridad por si acaso
+        if (!fecha || !hora || !personas || !cliente?.nombre || !cliente?.telefono) {
+            return res.status(400).json({ ok: false, error: "Faltan campos obligatorios." });
+        }
 
-        const fecha = cuerpo.fecha;
-        const hora = cuerpo.hora;
-        const tipoMesa = cuerpo.tipoMesa;
-        const mesa = cuerpo.mesa;
+        const nombre = cliente.nombre;
+        const telefono = cliente.telefono;
+        const email = cliente.email || 'correo@temporal.com';
 
         // Regla de negocio: Si es Terraza, fuerza 16 personas y piso nulo
-        const personas = tipoMesa === 'Terraza' ? 16 : (cuerpo.personas || 2);
-        const pisoBD = tipoMesa === 'Terraza' ? null : (cuerpo.piso || 1);
+        const personasBD = tipoMesa === 'Terraza' ? 16 : personas;
+        const pisoBD = tipoMesa === 'Terraza' ? null : (piso || 1);
 
         // Conversión a tipos de datos compatibles con MySQL
-        const esCumpleanosBD = (cuerpo.cumpleanos === 'Sí' || cuerpo.cumpleanos === true) ? 1 : 0;
-        const estadoBD = 'PENDIENTE'; // Entra para revisión por defecto
+        const esCumpleanosBD = (cumpleanos === 'Sí' || cumpleanos === true) ? 1 : 0;
+        const estadoBD = estado ? estado.toUpperCase() : 'PENDIENTE'; 
 
         const queryInsert = `
             INSERT INTO reservas 
@@ -65,7 +67,7 @@ app.post('/api/reservas', async (req, res) => {
         `;
 
         const [result] = await db.query(queryInsert, [
-            nombre, telefono, email, fecha, hora, personas, tipoMesa, pisoBD, mesa, esCumpleanosBD, estadoBD
+            nombre, telefono, email, fecha, hora, personasBD, tipoMesa, pisoBD, mesa, esCumpleanosBD, estadoBD
         ]);
 
         // Generamos el código estético basado en el ID auto-incrementado insertado
@@ -76,19 +78,22 @@ app.post('/api/reservas', async (req, res) => {
         console.log(`ID Real: ${result.insertId} -> Código: ${codigoEstetico}`);
         console.log(`Cliente: ${nombre}`);
         console.log(`==================================================\n`);
+        
         res.status(201).json({
+            ok: true,
             mensaje: 'Reserva procesada correctamente.',
             reserva: { id: codigoEstetico }
         });
 
     } catch (error) {
         console.error('Error al insertar reserva en la BD:', error);
-        res.status(500).json({ mensaje: 'Error interno del servidor al resguardar la reserva.' });
+        res.status(500).json({ ok: false, error: 'Error interno del servidor al resguardar la reserva.' });
     }
 });
 
 // =========================================================================
 // ENDPOINT 2: LISTAR RESERVAS (GET) -> Lee desde MySQL y formatea para el Dashboard
+// CORRECCIÓN 3: Eliminada la ruta duplicada que crasheaba el servidor con "pool.query"
 // =========================================================================
 app.get('/api/reservas', async (req, res) => {
     try {
@@ -128,7 +133,8 @@ app.get('/api/reservas', async (req, res) => {
 });
 
 // =========================================================================
-// ENDPOINTS 3 Y 4: ACTUALIZAR ESTADO (PUT / PATCH) -> Modifican la BD usando el ID numérico
+// ENDPOINTS 3 Y 4: ACTUALIZAR ESTADO (PUT / PATCH)
+// CORRECCIÓN 4: Se dejó una sola ruta PUT para evitar conflictos
 // =========================================================================
 app.put('/api/reservas/:id/estado', async (req, res) => {
     try {
@@ -175,142 +181,10 @@ app.patch('/api/reservas/:id', async (req, res) => {
     }
 });
 
-// Ruta para obtener todas las reservas adaptada exactamente a tu BD
-app.get('/api/reservas', async (req, res) => {
-    try {
-        // 1. 🔍 Hacemos la consulta directa a tu tabla única
-        const [rows] = await pool.query(`
-            SELECT 
-                id, 
-                nombre_cliente, 
-                telefono, 
-                correo, 
-                fecha_reserva, 
-                hora_reserva, 
-                num_comensales, 
-                tipo_zona, 
-                piso, 
-                numero_mesa, 
-                es_cumpleanos, 
-                estado_actual
-            FROM reservas
-            ORDER BY fecha_reserva ASC, hora_reserva ASC
-        `);
-
-        // 2. 📦 Mapeamos las columnas de tu BD para que calcen perfecto con tu frontend (dashboard.js)
-        const respuestaMapeada = rows.map(row => ({
-            id: row.id.toString(), // Convertimos a String por seguridad
-            fecha: row.fecha_reserva, 
-            hora: row.hora_reserva,
-            personas: row.num_comensales,
-            estado: row.estado_actual,
-            numero_mesa: row.numero_mesa,
-            zona: row.tipo_zona,
-            piso: row.piso,
-            cumpleanos: row.es_cumpleanos, 
-            
-            // Agrupamos los datos del cliente en el objeto interno que espera tu JS
-            cliente: {
-                nombre: row.nombre_cliente,
-                telefono: row.telefono,
-                correo: row.correo
-            }
-        }));
-
-        // 3. Enviamos la data limpia al frontend
-        res.json(respuestaMapeada);
-
-    } catch (error) {
-        console.error("❌ Error en GET /api/reservas:", error);
-        res.status(500).json({ error: "Error interno del servidor al obtener reservas" });
-    }
-});
-
-// Endpoint para actualizar el estado desde las acciones del Admin
-app.put('/api/reservas/:id/estado', async (req, res) => {
-    const { id } = req.params; // Viene como "R-001"
-    const { estado } = req.body; // Viene como "Confirmada" o "Cancelada"
-
-    try {
-        // Extraemos solo el número del ID (Ej: "R-001" -> 1)
-        const idNumerico = parseInt(id.replace('R-', ''), 10);
-
-        // Convertimos el estado a mayúsculas para que calce con el ENUM de MySQL
-        const estadoBD = estado.toUpperCase(); // "CONFIRMADA" o "CANCELADA"
-
-        const query = 'UPDATE reservas SET estado_actual = ? WHERE id = ?';
-        await db.query(query, [estadoBD, idNumerico]);
-
-        res.json({ ok: true, mensaje: "Estado actualizado correctamente" });
-    } catch (error) {
-        console.error("Error al actualizar estado:", error);
-        res.status(500).json({ ok: false, error: "No se pudo actualizar el estado" });
-    }
-});
-
-// ENDPOINT PARA CREAR UNA NUEVA RESERVA
-app.post('/api/reservas', async (req, res) => {
-    try {
-        // 1. Desestructuramos el objeto que viene desde el frontend
-        const { fecha, hora, personas, tipoMesa, piso, mesa, cumpleanos, estado, cliente } = req.body;
-
-        // Validaciones básicas de seguridad por si acaso
-        if (!fecha || !hora || !personas || !cliente?.nombre || !cliente?.telefono) {
-            return res.status(400).json({ ok: false, error: "Faltan campos obligatorios." });
-        }
-
-        // 2. Adaptar los datos al formato de tu Base de Datos
-        // Convertimos 'Confirmada' -> 'CONFIRMADA' para el ENUM de MySQL
-        const estadoBD = estado ? estado.toUpperCase() : 'CONFIRMADA';
-
-        // Convertimos 'Sí'/'No' a 1 o 0 para la columna es_cumpleanos (TINYINT/BOOLEAN)
-        const esCumpleanosBD = (cumpleanos === 'Sí' || cumpleanos === true) ? 1 : 0;
-
-        // Si es terraza, el piso va como null, sino agarra el piso enviado o por defecto 1
-        const pisoBD = tipoMesa === 'Terraza' ? null : (piso || 1);
-
-        // 3. Consulta SQL usando los mismos nombres de columna que vimos en tu GET
-        const query = `
-            INSERT INTO reservas 
-            (fecha_reserva, hora_reserva, num_comensales, tipo_zona, piso, numero_mesa, es_cumpleanos, estado_actual, nombre_cliente, telefono) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        // Ejecutamos la inserción pasando el arreglo de valores en orden
-        const [result] = await db.query(query, [
-            fecha,
-            hora,
-            personas,
-            tipoMesa,
-            pisoBD,
-            mesa,
-            esCumpleanosBD,
-            estadoBD,
-            cliente.nombre,
-            cliente.telefono
-        ]);
-
-        // 4. Formateamos el ID generado (Ej: si se insertó el id 4, devolvemos "R-004")
-        // Esto es vital para que tu "alert" del frontend no se rompa al leer data.reserva?.id
-        const codigoEstetico = `R-${String(result.insertId).padStart(3, '0')}`;
-
-        // Respondemos con éxito al cliente
-        res.status(201).json({
-            ok: true,
-            mensaje: "Reserva registrada con éxito en MySQL",
-            reserva: { id: codigoEstetico }
-        });
-
-    } catch (error) {
-        console.error("Error crítico al insertar la reserva:", error);
-        res.status(500).json({ ok: false, error: "Error interno al guardar la reserva en la base de datos" });
-    }
-});
-
 // Iniciamos el servidor
 app.listen(PORT, () => {
     console.log(`\n==================================================`);
-    console.log(` Surf activo en: http://localhost:${PORT} 🐟🔥`);
+    console.log(` Surf activo en el puerto: ${PORT} 🐟🔥`);
     console.log(` SQL vinculando directamente a Railway de forma real.`);
     console.log(`==================================================\n`);
 });
