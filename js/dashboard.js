@@ -1,3 +1,4 @@
+let listaReservas = [];
 document.addEventListener('DOMContentLoaded', () => {
 
     // Elementos clave del DOM
@@ -16,25 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         selectEstado.addEventListener('change', renderTable);
     }
 
-    // 1. Consultar las reservas al servidor de Node.js
-    function cargarReservasDesdeServidor() {
-        fetch('/api/reservas')
-            .then(response => {
-                if (!response.ok) throw new Error('Error en la respuesta del servidor');
-                return response.json();
-            })
-            .then(data => {
-                listaReservas = data; // Guardamos las reservas reales mapeadas desde MySQL
-                renderTable();        // Pintamos la tabla
-                actualizarTarjetasMetricas(); // Actualiza los contadores superiores
-            })
-            .catch(err => console.error('Error al solicitar datos al backend:', err));
-        if (typeof listaReservas !== 'undefined') {
-            listaReservas = datosBackend;
-        }
-    }
-
-    // 2. Renderizar la tabla aplicando los filtros en tiempo real
     // 2. Renderizar la tabla aplicando los filtros en tiempo real
     function renderTable() {
         if (!tableBody) return;
@@ -50,52 +32,69 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < listaReservas.length; i++) {
             const reserva = listaReservas[i];
 
-            // 🔍 VALIDACIÓN DE FILTROS ADAPTADA AL NUEVO BACKEND
-            // 1. Filtro de Texto (Busca en ID, Nombre del cliente o Teléfono)
+            // Mapeo de datos del cliente
             const nombreCliente = reserva.cliente && reserva.cliente.nombre ? reserva.cliente.nombre : '';
             const telfCliente = reserva.cliente && reserva.cliente.telefono ? reserva.cliente.telefono : '';
 
+            // Captura de los nuevos campos desde el objeto (deben venir de MySQL)
+            const numeroMesa = reserva.numero_mesa || 'N/A';
+            const zonaPiso = (reserva.zona || '') + (reserva.piso ? ` - Piso ${reserva.piso}` : '');
+            const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí';
+
+            // Filtros
             const coincideTexto = textoBusqueda === '' ||
                 reserva.id.toLowerCase().includes(textoBusqueda) ||
-                nombreCliente.toLowerCase().includes(textoBusqueda) ||
-                telfCliente.toLowerCase().includes(textoBusqueda);
-
-            // 2. Filtro de Estado (Usa la función auxiliar blindada que creamos antes)
+                nombreCliente.toLowerCase().includes(textoBusqueda);
             const coincideEstadoFiltro = coincideEstado(reserva, estadoFiltro);
-
-            // 3. Filtro de Fecha
             const coincideFecha = fechaFiltro === '' || reserva.fecha === fechaFiltro;
 
-            // Si pasa todos los filtros, construimos la fila 🚀
             if (coincideTexto && coincideEstadoFiltro && coincideFecha) {
                 contadorResultados++;
 
-                // Administramos los iconos de acción según el estado
-                let actionIconsHTML = '';
+                // 🎂 Badge o Distintivo de Cumpleaños junto al nombre
+                let cumpleBadgeHTML = '';
+                if (esCumple) {
+                    cumpleBadgeHTML = `<span class="badge bg-info text-dark ms-2" title="¡Celebra Cumpleaños!"><i class="bi bi-cake2-fill me-1"></i>Cumpleaños</span>`;
+                }
+
+                // Iconos de acción (Agregamos el botón de OJO para ver el resumen)
+                let actionIconsHTML = `
+                <button class="action-btn text-primary me-1" onclick="verResumenReserva('${reserva.id}')" title="Ver Resumen Completo">
+                    <i class="bi bi-eye-fill"></i>
+                </button>
+            `;
+
                 if (reserva.estado === 'Pendiente') {
-                    actionIconsHTML = `
-                    <button class="action-btn icon-check" onclick="cambiarEstadoReserva('${reserva.id}', 'Confirmada')" title="Confirmar"><i class="bi bi-check2"></i></button>
+                    actionIconsHTML += `
+                    <button class="action-btn icon-check me-1" onclick="cambiarEstadoReserva('${reserva.id}', 'Confirmada')" title="Confirmar"><i class="bi bi-check2"></i></button>
                     <button class="action-btn icon-cancel" onclick="cambiarEstadoReserva('${reserva.id}', 'Cancelada')" title="Cancelar"><i class="bi bi-x"></i></button>
                 `;
                 }
 
-                // Definimos el color del badge dinámicamente según el estado
                 let badgeClass = 'bg-secondary';
                 if (reserva.estado === 'Confirmada') badgeClass = 'bg-success';
                 if (reserva.estado === 'Pendiente') badgeClass = 'bg-warning text-dark';
                 if (reserva.estado === 'Cancelada') badgeClass = 'bg-danger';
 
-                // Sumamos al string acumulado inyectando las propiedades correctas de MySQL
+                // Construcción de la fila única compacta
                 htmlAcumulado += `
                 <tr class="align-middle">
                     <th scope="row" class="ps-3 small text-muted font-monospace">${reserva.id}</th>
                     <td>
-                        <div class="fw-bold">${nombreCliente}</div>
+                        <div class="d-flex align-items-center fw-bold">
+                            ${nombreCliente} ${cumpleBadgeHTML}
+                        </div>
                         <div class="small text-muted">${telfCliente}</div>
                     </td>
-                    <td>${reserva.fecha}</td>
-                    <td>${reserva.hora}</td>
-                    <td class="text-center">${reserva.personas}</td>
+                    <td>
+                        <div class="fw-bold"><i class="bi bi-calendar3 me-1 small"></i>${reserva.fecha}</div>
+                        <div class="small text-muted"><i class="bi bi-clock me-1 small"></i>${reserva.hora}</div>
+                    </td>
+                    <td class="text-center font-monospace fw-bold">${reserva.personas}</td>
+                    <td>
+                        <div class="fw-bold text-dark"><i class="bi bi-grid-3x3-gap me-1 small text-secondary"></i>Mesa ${numeroMesa}</div>
+                        <div class="small text-muted text-capitalize">${zonaPiso || 'No asignada'}</div>
+                    </td>
                     <td><span class="badge ${badgeClass}">${reserva.estado}</span></td>
                     <td class="text-end pe-3">${actionIconsHTML}</td>
                 </tr>
@@ -103,9 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Inyección única al DOM
         tableBody.innerHTML = htmlAcumulado;
-
         const txtResultados = document.querySelector('.result-count');
         if (txtResultados) txtResultados.textContent = `${contadorResultados} resultados`;
     }
@@ -337,21 +334,71 @@ document.addEventListener('DOMContentLoaded', () => {
             const datosBackend = await respuesta.json();
             console.log("👉 [BACKEND] Datos recibidos de MySQL:", datosBackend);
 
-            // 🎯 AQUÍ ESTABA EL TRUCO: Llenamos la variable exacta que usa tu renderTable
+            // Llenamos la variable global (SIN usar const ni let aquí adentro)
             listaReservas = datosBackend;
 
             console.log("📊 [FRONTEND] Dibujando tabla con listaReservas...");
 
-            // Ejecutamos tus funciones globales
+            // Ejecutamos tus funciones para pintar la interfaz
             renderTable();
 
+            // Verificamos cuál de tus dos funciones de contadores tienes activa:
             if (typeof actualizarContadores === 'function') {
                 actualizarContadores(listaReservas);
+            } else if (typeof actualizarTarjetasMetricas === 'function') {
+                actualizarTarjetasMetricas();
             }
+
         } catch (error) {
             console.error("❌ Error al cargar reservas en el dashboard:", error);
         }
     }
+
+    // Función global para mostrar el resumen detallado en el Modal
+    window.verResumenReserva = function (idReserva) {
+        // Buscamos la reserva seleccionada en nuestra lista local
+        const reserva = listaReservas.find(r => r.id === idReserva);
+        if (!reserva) return;
+
+        const nombre = reserva.cliente && reserva.cliente.nombre ? reserva.cliente.nombre : 'No registrado';
+        const telefono = reserva.cliente && reserva.cliente.telefono ? reserva.cliente.telefono : 'No registrado';
+        const correo = reserva.cliente && reserva.cliente.correo ? reserva.cliente.correo : 'No registrado';
+        const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí' ? 'Sí 🎉' : 'No';
+
+        const modalBody = document.getElementById('modalResumenBody');
+
+        // Plantilla HTML del resumen detallado (Diseño de tarjeta limpia)
+        modalBody.innerHTML = `
+        <div class="p-2">
+            <div class="text-center mb-4">
+                <span class="fs-3 fw-bold text-primary">Reserva #${reserva.id}</span>
+                <p class="text-muted mb-0">Estado actual: <strong class="text-uppercase">${reserva.estado}</strong></p>
+            </div>
+            
+            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-person-fill me-2"></i>Datos del Cliente</h6>
+            <div class="row mb-3 g-2">
+                <div class="col-4 text-muted">Nombre:</div><div class="col-8 fw-bold">${nombre}</div>
+                <div class="col-4 text-muted">Teléfono:</div><div class="col-8">${telefono}</div>
+                <div class="col-4 text-muted">Correo:</div><div class="col-8 text-break">${correo}</div>
+            </div>
+
+            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Detalles de la Cita</h6>
+            <div class="row g-2">
+                <div class="col-4 text-muted">Fecha:</div><div class="col-8 fw-bold">${reserva.fecha}</div>
+                <div class="col-4 text-muted">Hora:</div><div class="col-8 fw-bold">${reserva.hora}</div>
+                <div class="col-4 text-muted">Asistentes:</div><div class="col-8"><span class="badge bg-dark">${reserva.personas} personas</span></div>
+                <div class="col-4 text-muted">Mesa Asignada:</div><div class="col-8 fw-bold text-success">Mesa ${reserva.numero_mesa || 'N/A'}</div>
+                <div class="col-4 text-muted">Ubicación:</div><div class="col-8 text-capitalize">${reserva.zona || 'N/A'} - Piso ${reserva.piso || '1'}</div>
+                <div class="col-4 text-muted">Cumpleaños:</div><div class="col-8">${esCumple}</div>
+            </div>
+        </div>
+    `;
+
+        // Inicializamos y abrimos el modal de Bootstrap de manera nativa
+        const miModal = new bootstrap.Modal(document.getElementById('modalResumen'));
+        miModal.show();
+    };
+
     // Ejecución inicial automática de la carga de datos
     cargarReservasDesdeServidor();
 });
@@ -382,6 +429,51 @@ async function actualizarEstadoReserva(idReserva, nuevoEstado) {
     }
 }
 
+// Función global para mostrar el resumen detallado en el Modal
+function verResumenReserva(idReserva) {
+    // Buscamos la reserva seleccionada en nuestra lista local
+    const reserva = listaReservas.find(r => r.id === idReserva);
+    if (!reserva) return;
+
+    const nombre = reserva.cliente && reserva.cliente.nombre ? reserva.cliente.nombre : 'No registrado';
+    const telefono = reserva.cliente && reserva.cliente.telefono ? reserva.cliente.telefono : 'No registrado';
+    const correo = reserva.cliente && reserva.cliente.correo ? reserva.cliente.correo : 'No registrado';
+    const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí' ? 'Sí 🎉' : 'No';
+
+    const modalBody = document.getElementById('modalResumenBody');
+
+    // Plantilla HTML del resumen detallado (Diseño de tarjeta limpia)
+    modalBody.innerHTML = `
+        <div class="p-2">
+            <div class="text-center mb-4">
+                <span class="fs-3 fw-bold text-primary">Reserva #${reserva.id}</span>
+                <p class="text-muted mb-0">Estado actual: <strong class="text-uppercase">${reserva.estado}</strong></p>
+            </div>
+            
+            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-person-fill me-2"></i>Datos del Cliente</h6>
+            <div class="row mb-3 g-2">
+                <div class="col-4 text-muted">Nombre:</div><div class="col-8 fw-bold">${nombre}</div>
+                <div class="col-4 text-muted">Teléfono:</div><div class="col-8">${telefono}</div>
+                <div class="col-4 text-muted">Correo:</div><div class="col-8 text-break">${correo}</div>
+            </div>
+
+            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Detalles de la Cita</h6>
+            <div class="row g-2">
+                <div class="col-4 text-muted">Fecha:</div><div class="col-8 fw-bold">${reserva.fecha}</div>
+                <div class="col-4 text-muted">Hora:</div><div class="col-8 fw-bold">${reserva.hora}</div>
+                <div class="col-4 text-muted">Asistentes:</div><div class="col-8"><span class="badge bg-dark">${reserva.personas} personas</span></div>
+                <div class="col-4 text-muted">Mesa Asignada:</div><div class="col-8 fw-bold text-success">Mesa ${reserva.numero_mesa || 'N/A'}</div>
+                <div class="col-4 text-muted">Ubicación:</div><div class="col-8 text-capitalize">${reserva.zona || 'N/A'} - Piso ${reserva.piso || '1'}</div>
+                <div class="col-4 text-muted">Cumpleaños:</div><div class="col-8">${esCumple}</div>
+            </div>
+        </div>
+    `;
+
+    // Inicializamos y abrimos el modal de Bootstrap de manera nativa
+    const miModal = new bootstrap.Modal(document.getElementById('modalResumen'));
+    miModal.show();
+}
+
 // FUNCIÓN EN DASHBOARD.JS PARA ENVIAR LA NUEVA RESERVA AL SERVIDOR
 async function enviarNuevaReserva(datosFormulario) {
     try {
@@ -409,5 +501,67 @@ async function enviarNuevaReserva(datosFormulario) {
         }
     } catch (error) {
         console.error("Error al enviar la reserva:", error);
+    }
+}
+
+// 👁️ Función para cargar los datos reales en tu Modal personalizado y mostrarlo
+function verDetalleReserva(idReserva) {
+    // 1. Buscamos la reserva en tu lista global
+    const reserva = listaReservas.find(r => r.id.toString() === idReserva.toString());
+
+    if (!reserva) {
+        console.error("❌ No se encontró la reserva con ID:", idReserva);
+        return;
+    }
+
+    console.log("📅 Cargando expediente en el Modal para la reserva:", reserva);
+
+    // 2. ✍️ Inyectamos los datos directamente usando tus IDs exactos del HTML
+    document.getElementById('modalDetalleId').textContent = reserva.id;
+    document.getElementById('modalDetalleCliente').textContent = reserva.cliente ? reserva.cliente.nombre : '-';
+    document.getElementById('modalDetalleTelefono').textContent = reserva.cliente ? reserva.cliente.telefono : 'No registrado';
+    document.getElementById('modalDetalleFecha').textContent = reserva.fecha;
+    document.getElementById('modalDetalleHora').textContent = reserva.hora;
+    document.getElementById('modalDetallePersonas').textContent = reserva.personas;
+    document.getElementById('modalDetalleTipoMesa').textContent = reserva.zona || 'No asignada';
+    document.getElementById('modalDetalleNumeroMesa').textContent = reserva.numero_mesa || 'N/A';
+
+    // 🏢 Control dinámico de la fila del Piso (Muestra u oculta según la BD)
+    const filaPiso = document.getElementById('filaModalPiso');
+    const txtPiso = document.getElementById('modalDetallePiso');
+    if (reserva.piso) {
+        txtPiso.textContent = `Piso ${reserva.piso}`;
+        filaPiso.classList.remove('d-none'); // Quitamos d-none para mostrar la fila
+    } else {
+        filaPiso.classList.add('d-none');    // Ocultamos la fila si viene vacío
+    }
+
+    // 🎂 Estilo visual impecable para el indicador de Cumpleaños
+    const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí';
+    const celdaCumple = document.getElementById('modalDetalleCumpleanos');
+    if (celdaCumple) {
+        celdaCumple.innerHTML = esCumple
+            ? `<span class="badge bg-info text-dark fw-bold"><i class="bi bi-cake2-fill me-1"></i> Sí, celebra</span>`
+            : `<span class="text-muted small">No</span>`;
+    }
+
+    // 🏷️ Estilo dinámico de Badge a la celda del Estado Actual
+    const celdaEstado = document.getElementById('modalDetalleEstado');
+    if (celdaEstado) {
+        let badgeClass = 'bg-secondary';
+        if (reserva.estado === 'Confirmada') badgeClass = 'bg-success';
+        if (reserva.estado === 'Pendiente') badgeClass = 'bg-warning text-dark';
+        if (reserva.estado === 'Cancelada') badgeClass = 'bg-danger';
+
+        celdaEstado.innerHTML = `<span class="badge ${badgeClass} px-3 py-1 fw-bold">${reserva.estado}</span>`;
+    }
+
+    // 3. 🚀 Levantamos tu modal programáticamente usando el ID exacto
+    const modalElement = document.getElementById('modalDetalleReserva');
+    if (modalElement) {
+        const miModalBootstrap = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        miModalBootstrap.show();
+    } else {
+        console.error("❌ No se encontró el modal con ID 'modalDetalleReserva' en el HTML.");
     }
 }

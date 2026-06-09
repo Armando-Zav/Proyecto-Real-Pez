@@ -12,6 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir los archivos estáticos directamente desde la raíz
 app.use(express.static(path.join(__dirname, './')));
+const dbUrl = process.env.MYSQL_URL;
 
 // Ruta de prueba de conexión
 app.get('/probar-bd', async (req, res) => {
@@ -43,16 +44,16 @@ app.post('/api/reservas', async (req, res) => {
         const nombre = cuerpo.cliente?.nombre || 'Sin nombre';
         const telefono = cuerpo.cliente?.telefono || '';
         const email = cuerpo.cliente?.email || 'correo@temporal.com';
-        
+
         const fecha = cuerpo.fecha;
         const hora = cuerpo.hora;
         const tipoMesa = cuerpo.tipoMesa;
         const mesa = cuerpo.mesa;
-        
+
         // Regla de negocio: Si es Terraza, fuerza 16 personas y piso nulo
         const personas = tipoMesa === 'Terraza' ? 16 : (cuerpo.personas || 2);
         const pisoBD = tipoMesa === 'Terraza' ? null : (cuerpo.piso || 1);
-        
+
         // Conversión a tipos de datos compatibles con MySQL
         const esCumpleanosBD = (cuerpo.cumpleanos === 'Sí' || cuerpo.cumpleanos === true) ? 1 : 0;
         const estadoBD = 'PENDIENTE'; // Entra para revisión por defecto
@@ -174,43 +175,54 @@ app.patch('/api/reservas/:id', async (req, res) => {
     }
 });
 
-// ENDPOINT PARA EL DASHBOARD: Obtener todas las reservas mapeadas
+// Ruta para obtener todas las reservas adaptada exactamente a tu BD
 app.get('/api/reservas', async (req, res) => {
     try {
-        // Traemos todas las reservas ordenadas por la más reciente
-        const [rows] = await db.query(`SELECT id, DATE_FORMAT(fecha_reserva, '%Y-%m-%d') AS fecha_reserva, hora_reserva, num_comensales, tipo_zona, piso, numero_mesa, es_cumpleanos, estado_actual, nombre_cliente, telefono, correo FROM reservas ORDER BY fecha_creacion DESC`);
-        
-        // Transformamos las filas planas de MySQL al formato exacto que pide tu dashboard.js
-        const reservasMapeadas = rows.map(row => {
-            const codigoEstetico = `R-${String(row.id).padStart(3, '0')}`;
-            const fechaString = row.fecha_reserva instanceof Date 
-                ? row.fecha_reserva.toISOString().split('T')[0] 
-                : row.fecha_reserva;
-            const estadoFormateado = row.estado_actual.charAt(0) + row.estado_actual.slice(1).toLowerCase();
+        // 1. 🔍 Hacemos la consulta directa a tu tabla única
+        const [rows] = await pool.query(`
+            SELECT 
+                id, 
+                nombre_cliente, 
+                telefono, 
+                correo, 
+                fecha_reserva, 
+                hora_reserva, 
+                num_comensales, 
+                tipo_zona, 
+                piso, 
+                numero_mesa, 
+                es_cumpleanos, 
+                estado_actual
+            FROM reservas
+            ORDER BY fecha_reserva ASC, hora_reserva ASC
+        `);
 
-            return {
-                id: codigoEstetico,
-                fecha: fechaString,
-                hora: row.hora_reserva ? String(row.hora_reserva).substring(0, 5) : "00:00",
-                personas: row.num_comensales,
-                tipoMesa: row.tipo_zona,
-                piso: row.piso,
-                mesa: row.numero_mesa,
-                cumpleanos: row.es_cumpleanos ? 'Sí' : 'No',
-                estado: estadoFormateado,
-                cliente: {
-                    nombre: row.nombre_cliente,
-                    telefono: row.telefono,
-                    correo: row.correo
-                }
-            };
-        });
+        // 2. 📦 Mapeamos las columnas de tu BD para que calcen perfecto con tu frontend (dashboard.js)
+        const respuestaMapeada = rows.map(row => ({
+            id: row.id.toString(), // Convertimos a String por seguridad
+            fecha: row.fecha_reserva, 
+            hora: row.hora_reserva,
+            personas: row.num_comensales,
+            estado: row.estado_actual,
+            numero_mesa: row.numero_mesa,
+            zona: row.tipo_zona,
+            piso: row.piso,
+            cumpleanos: row.es_cumpleanos, 
+            
+            // Agrupamos los datos del cliente en el objeto interno que espera tu JS
+            cliente: {
+                nombre: row.nombre_cliente,
+                telefono: row.telefono,
+                correo: row.correo
+            }
+        }));
 
-        res.json(reservasMapeadas); // Enviamos el arreglo perfecto al frontend
-        
+        // 3. Enviamos la data limpia al frontend
+        res.json(respuestaMapeada);
+
     } catch (error) {
-        console.error("Error al obtener reservas para el dashboard:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
+        console.error("❌ Error en GET /api/reservas:", error);
+        res.status(500).json({ error: "Error interno del servidor al obtener reservas" });
     }
 });
 
@@ -222,7 +234,7 @@ app.put('/api/reservas/:id/estado', async (req, res) => {
     try {
         // Extraemos solo el número del ID (Ej: "R-001" -> 1)
         const idNumerico = parseInt(id.replace('R-', ''), 10);
-        
+
         // Convertimos el estado a mayúsculas para que calce con el ENUM de MySQL
         const estadoBD = estado.toUpperCase(); // "CONFIRMADA" o "CANCELADA"
 
@@ -249,11 +261,11 @@ app.post('/api/reservas', async (req, res) => {
 
         // 2. Adaptar los datos al formato de tu Base de Datos
         // Convertimos 'Confirmada' -> 'CONFIRMADA' para el ENUM de MySQL
-        const estadoBD = estado ? estado.toUpperCase() : 'CONFIRMADA'; 
-        
+        const estadoBD = estado ? estado.toUpperCase() : 'CONFIRMADA';
+
         // Convertimos 'Sí'/'No' a 1 o 0 para la columna es_cumpleanos (TINYINT/BOOLEAN)
         const esCumpleanosBD = (cumpleanos === 'Sí' || cumpleanos === true) ? 1 : 0;
-        
+
         // Si es terraza, el piso va como null, sino agarra el piso enviado o por defecto 1
         const pisoBD = tipoMesa === 'Terraza' ? null : (piso || 1);
 
@@ -283,12 +295,12 @@ app.post('/api/reservas', async (req, res) => {
         const codigoEstetico = `R-${String(result.insertId).padStart(3, '0')}`;
 
         // Respondemos con éxito al cliente
-        res.status(201).json({ 
-            ok: true, 
+        res.status(201).json({
+            ok: true,
             mensaje: "Reserva registrada con éxito en MySQL",
-            reserva: { id: codigoEstetico } 
+            reserva: { id: codigoEstetico }
         });
-        
+
     } catch (error) {
         console.error("Error crítico al insertar la reserva:", error);
         res.status(500).json({ ok: false, error: "Error interno al guardar la reserva en la base de datos" });
