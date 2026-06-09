@@ -229,6 +229,13 @@
     pointer-events: none;            /* Bloquea cualquier intento de clic por seguridad */
 }
 
+/* Día con todas las reservas completas */
+.day-cell.fully-booked-day {
+    color: #842029 !important;
+    background-color: #f8d7da !important;
+    border: 1px solid #f5c2c7;
+}
+
 /* ==========================================
    FULLCALENDAR OVERRIDES (SOPORTE LEGADO)
    ========================================== */

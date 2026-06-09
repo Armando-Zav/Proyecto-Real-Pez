@@ -22,6 +22,10 @@ let datosReserva = {
     }
 };
 
+let reservasExistentes = [];
+const MAX_RESERVAS_POR_DIA = 3;
+const HORARIOS_PERMITIDOS = ['12:00', '13:00', '14:00'];
+
 /* Configuración de mesas disponibles por piso */
 const mesasDisponiblesPorPiso = {
     1: {
@@ -61,6 +65,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 2. Renderizar el nuevo calendario propio desde cero
     renderCustomCalendar();
+
+    // 2.5. Cargar reservas existentes para calcular disponibilidad por fecha y hora
+    cargarReservasExistentes();
 
     // 3. Controladores de eventos para la navegación del calendario nativo
     const btnPrev = document.getElementById('btn-prev-months');
@@ -155,13 +162,16 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
         // 2. Crear objeto Date para el día de la celda actual
         const fechaCelda = new Date(year, monthIndex, day);
 
-        // 3. CONTROL DE REGLA DE NEGOCIO: Bloquear hoy y el pasado
+        // 3. CONTROL DE REGLA DE NEGOCIO: Bloquear hoy, fechas pasadas y fechas ya completas
         if (fechaCelda <= hoy) {
             // Si el día es menor o igual a hoy, se bloquea visualmente
             dayCell.classList.add('day-cell', 'disabled-day');
             // Al no tener addEventListener('click'), queda totalmente inerte
+        } else if (fechaEstaCompleta(fullDateStr)) {
+            dayCell.classList.add('day-cell', 'disabled-day', 'fully-booked-day');
+            dayCell.title = 'Este día ya tiene las 3 reservas completas';
         } else {
-            // Si es de mañana en adelante, el día es completamente válido
+            // Si es de mañana en adelante y no está completo, el día es válido
             dayCell.classList.add('day-cell');
 
             // Mantener pintado si coincide con la selección actual
@@ -185,6 +195,70 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
     }
 }
 
+async function cargarReservasExistentes() {
+    try {
+        const respuesta = await fetch('/api/reservas');
+        if (!respuesta.ok) throw new Error('Error al obtener reservas del servidor.');
+
+        reservasExistentes = await respuesta.json();
+        marcarFechasCompletas();
+    } catch (error) {
+        console.error('No se pudo cargar la disponibilidad de reservas:', error);
+    }
+}
+
+function getReservasPorFecha(fecha) {
+    return reservasExistentes.filter(reserva => reserva.fecha === fecha);
+}
+
+function getReservasPorFechaHora(fecha, hora) {
+    return reservasExistentes.filter(reserva => reserva.fecha === fecha && reserva.hora === hora);
+}
+
+function fechaEstaCompleta(fecha) {
+    return getReservasPorFecha(fecha).length >= MAX_RESERVAS_POR_DIA;
+}
+
+function horasOcupadasEnFecha(fecha) {
+    return getReservasPorFecha(fecha).map(reserva => reserva.hora);
+}
+
+function getMesasOcupadasEnFechaHora(fecha, hora) {
+    return getReservasPorFechaHora(fecha, hora)
+        .map(reserva => parseInt(reserva.mesa, 10))
+        .filter(Number.isFinite);
+}
+
+function marcarFechasCompletas() {
+    document.querySelectorAll('.day-cell[data-date]').forEach(cell => {
+        const fecha = cell.getAttribute('data-date');
+        if (fechaEstaCompleta(fecha)) {
+            cell.classList.add('disabled-day', 'fully-booked-day');
+            cell.title = 'Este día ya tiene las 3 reservas completas';
+        } else if (cell.classList.contains('fully-booked-day')) {
+            cell.classList.remove('disabled-day', 'fully-booked-day');
+            cell.title = '';
+        }
+    });
+}
+
+function actualizarOpcionesHora(fecha) {
+    const horaSelect = document.getElementById('input-hora');
+    if (!horaSelect || !fecha) return;
+
+    const horasOcupadas = horasOcupadasEnFecha(fecha);
+    const opciones = horaSelect.querySelectorAll('option');
+
+    opciones.forEach(option => {
+        option.disabled = horasOcupadas.includes(option.value);
+    });
+
+    if (horasOcupadas.includes(horaSelect.value)) {
+        const primeraHoraLibre = Array.from(opciones).find(option => !option.disabled);
+        horaSelect.value = primeraHoraLibre ? primeraHoraLibre.value : '';
+    }
+}
+
 /* ==========================================================================
     CONEXIÓN FORMULARIO MODAL -> WIZARD
    ========================================================================== */
@@ -197,6 +271,11 @@ function inicializarModalFecha() {
 
     // Evento previo a que se muestre el modal en pantalla
     modalEl.addEventListener('show.bs.modal', function () {
+        if (!window.fechaSeleccionada) {
+            mostrarAlerta('Selecciona primero una fecha en el calendario.');
+            return;
+        }
+
         const fechaInput = document.getElementById('fecha-seleccionada-display');
         if (fechaInput && window.fechaSeleccionada) {
             // Formatear visualmente para el usuario (Ej: 26/05/2026)
@@ -204,9 +283,11 @@ function inicializarModalFecha() {
             fechaInput.value = `${dia}/${mes}/${anio}`;
         }
 
+        actualizarOpcionesHora(window.fechaSeleccionada);
+
         const horaInput = document.getElementById('input-hora');
         if (horaInput && !horaInput.value) {
-            horaInput.value = '12:00';
+            horaInput.value = HORARIOS_PERMITIDOS.find(hora => !horasOcupadasEnFecha(window.fechaSeleccionada).includes(hora)) || '';
         }
     });
 
@@ -226,8 +307,16 @@ function inicializarModalFecha() {
                 mostrarAlerta('Selecciona primero una fecha en el calendario.');
                 return;
             }
+            if (fechaEstaCompleta(window.fechaSeleccionada)) {
+                mostrarAlerta('Esa fecha ya tiene las 3 reservas completas. Elige otra fecha.');
+                return;
+            }
             if (!hora) {
                 mostrarAlerta('Selecciona una hora para tu reserva.');
+                return;
+            }
+            if (horasOcupadasEnFecha(window.fechaSeleccionada).includes(hora)) {
+                mostrarAlerta('Esa hora ya está reservada para esta fecha. Elige otro horario.');
                 return;
             }
 
@@ -252,6 +341,14 @@ function inicializarModalFecha() {
 function abrirModalFecha() {
     if (!modalFecha) {
         mostrarAlerta('El modal de fecha no está inicializado.');
+        return;
+    }
+    if (!window.fechaSeleccionada) {
+        mostrarAlerta('Selecciona primero una fecha en el calendario.');
+        return;
+    }
+    if (fechaEstaCompleta(window.fechaSeleccionada)) {
+        mostrarAlerta('Esa fecha ya tiene las 3 reservas completas. Elige otra fecha.');
         return;
     }
     modalFecha.show();
@@ -475,11 +572,14 @@ function filtrarMesasPorCapacidad(cantidad) {
     const contenedorPiso = document.getElementById(`mapa-piso-${pisoActual}`);
     if (!contenedorPiso) return;
 
+    const mesasReservadas = getMesasOcupadasEnFechaHora(datosReserva.fecha, datosReserva.hora);
+
     // Seleccionamos solo las mesas de ESTE piso
     contenedorPiso.querySelectorAll('.mesa').forEach(mesa => {
         const numeroMesa = parseInt(mesa.textContent.trim(), 10);
+        const mesaDisponible = mesasDisponibles.includes(numeroMesa) && !mesasReservadas.includes(numeroMesa);
 
-        if (mesasDisponibles.includes(numeroMesa)) {
+        if (mesaDisponible) {
             // Habilitar mesa
             mesa.classList.remove('mesa-bloqueada');
             mesa.style.pointerEvents = 'auto';

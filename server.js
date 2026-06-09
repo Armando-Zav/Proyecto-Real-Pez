@@ -66,8 +66,9 @@ app.post('/api/reservas', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
+        const numeroMesaBD = tipoMesa === 'Terraza' ? null : mesa;
         const [result] = await db.query(queryInsert, [
-            nombre, telefono, email, fecha, hora, personasBD, tipoMesa, pisoBD, mesa, esCumpleanosBD, estadoBD
+            nombre, telefono, email, fecha, hora, personasBD, tipoMesa, pisoBD, numeroMesaBD, esCumpleanosBD, estadoBD
         ]);
 
         // Generamos el código estético basado en el ID auto-incrementado insertado
@@ -114,13 +115,15 @@ app.get('/api/reservas', async (req, res) => {
                 tipoMesa: row.tipo_zona,
                 piso: row.piso,
                 mesa: row.numero_mesa,
+                numero_mesa: row.numero_mesa,
                 cumpleanos: row.es_cumpleanos ? 'Sí' : 'No',
                 // PENDIENTE -> Pendiente, CONFIRMADA -> Confirmada
                 estado: row.estado_actual.charAt(0) + row.estado_actual.slice(1).toLowerCase(),
                 cliente: {
                     nombre: row.nombre_cliente,
                     telefono: row.telefono,
-                    email: row.correo
+                    email: row.correo,
+                    correo: row.correo
                 }
             };
         });
