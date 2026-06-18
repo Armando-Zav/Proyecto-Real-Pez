@@ -665,6 +665,13 @@ function finalizarReserva() {
     datosReserva.cliente.email = document.getElementById('input-email').value.trim();
     datosReserva.cliente.comentarios = document.getElementById('input-comentarios').value.trim();
 
+    // 👇 ¡AQUÍ ESTÁ LA CORRECCIÓN! 👇
+    // Forzamos a 16 personas si la reserva es para la Terraza
+    if (datosReserva.tipoMesa === 'Terraza' || datosReserva.mesa === 'Terraza') {
+        datosReserva.personas = 16;
+    }
+    // 👆 FIN DE LA CORRECCIÓN 👆
+
     const btnConfirmar = document.querySelector('#form-confirmar-reserva button[type="submit"]');
     const textoOriginalBtn = btnConfirmar ? btnConfirmar.innerHTML : 'Confirmar Reserva';
 
