@@ -74,13 +74,22 @@ ul a:focus-visible {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, rgba(0, 180, 216, 0.16), rgba(3, 4, 92, 0.72));
+    /* background: radial-gradient(circle at center, rgba(0, 180, 216, 0.16), rgba(3, 4, 92, 0.72)); */
     pointer-events: none;
     z-index: 1;
 }
 
 .carousel-item img {
     filter: brightness(0.4);
+}
+
+#carruselTerraza .carousel-inner::before {
+    display: none !important; /* Quitamos la capa azul oscuro */
+}
+
+#carruselTerraza .carousel-item img {
+    filter: brightness(1) !important; /* Restauramos el brillo al 100% */
+    height: auto; /* Para que las fotos no se deformen */
 }
 
 .carousel-overlay {
