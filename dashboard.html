@@ -126,11 +126,11 @@
                 <i class="bi bi-plus-lg"></i> Nueva Reserva
             </button>
             <div class="d-flex align-items-center gap-2 filter-group">
-                <select class="form-select form-select-sm text-dark bg-white" id="selectEstado">
-                    <option selected>Todos los estados</option>
-                    <option value="1">Confirmada</option>
-                    <option value="2">Pendiente</option>
-                    <option value="3">Cancelada</option>
+                <select class="form-select form-select-sm text-dark bg-white" id="selectEstado" onchange="renderTable()">
+                    <option value="Todos">Todos los estados</option>
+                    <option value="Confirmada">Confirmada</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Cancelada">Cancelada</option>
                 </select>
                 <input type="date" id="inputFecha" class="form-control form-control-sm text-muted bg-white date-input">
                 <span class="text-muted small result-count ms-1">10 resultados</span>
@@ -170,7 +170,7 @@
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-white">
                     <h5 class="modal-title fw-bold text-dark fs-6"><i class="bi bi-eye-fill me-2 text-primary"></i>Resumen de Reserva</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button onclick="verResumenReserva('${reserva.id}')" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-3" id="modalResumenBody">
                     <div class="text-center text-muted">Cargando...</div>

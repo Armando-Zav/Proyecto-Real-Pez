@@ -7,9 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputFecha = document.getElementById('inputFecha');
     const selectEstado = document.getElementById('selectEstado');
 
-    // Arreglo en memoria para las reservas sincronizadas del servidor
-    let listaReservas = [];
-
     // Asignamos los eventos de escucha en tiempo real para los filtros
     if (inputBuscar && inputFecha && selectEstado) {
         inputBuscar.addEventListener('input', renderTable);
@@ -24,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const textoBusqueda = inputBuscar.value.toLowerCase().trim();
         const fechaFiltro = inputFecha.value;
-        const estadoFiltro = selectEstado.value;
+        const estadoFiltro = document.getElementById('selectEstado').value;
 
         let contadorResultados = 0;
         let htmlAcumulado = '';
@@ -37,9 +34,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const telfCliente = reserva.cliente && reserva.cliente.telefono ? reserva.cliente.telefono : '';
 
             // Captura de los nuevos campos desde el objeto (deben venir de MySQL)
-            const numeroMesa = reserva.numero_mesa || 'N/A';
-            const zonaPiso = (reserva.zona || '') + (reserva.piso ? ` - Piso ${reserva.piso}` : '');
+            // Captura de los campos y lógica para separar Terraza de Mesas normales
+            // Atrapamos el dato sin importar cómo lo haya mandado el backend
+            const tipoZona = reserva.tipo_zona || reserva.tipo_mesa || reserva.tipoMesa || reserva.zona || '';
             const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí';
+
+            // Construimos el bloque HTML de la mesa dependiendo de si es terraza o no
+            // Construimos el bloque HTML de la mesa dependiendo de si es terraza o no
+            let infoMesaHTML = '';
+
+            // 1. PRIMERO verificamos directamente si el tipoMesa del JSON es Terraza
+            if (reserva.tipoMesa === 'Terraza' || reserva.tipoMesa === 'terraza' || tipoZona.toLowerCase() === 'terraza') {
+                infoMesaHTML = `
+                    <div class="fw-bold text-dark"><i class="bi bi-clouds-fill me-1 small text-info"></i>Terraza</div>
+                    <div class="small text-muted text-capitalize">Área completa</div>
+                `;
+            }
+            // 2. Si NO es terraza, verificamos si tiene un número de mesa asignado
+            else if (reserva.mesa || reserva.numero_mesa) {
+                const numMesa = reserva.mesa || reserva.numero_mesa;
+                const textoPiso = reserva.piso ? ` - Piso ${reserva.piso}` : '';
+                const zonaAsignada = tipoZona ? tipoZona : 'Normal';
+
+                infoMesaHTML = `
+                    <div class="fw-bold text-dark"><i class="bi bi-grid-3x3-gap me-1 small text-secondary"></i>Mesa ${numMesa}</div>
+                    <div class="small text-muted text-capitalize">${zonaAsignada}${textoPiso}</div>
+                `;
+            }
+            // 3. Si no es terraza y tampoco tiene mesa asignada (N/A real)
+            else {
+                infoMesaHTML = `
+                    <div class="fw-bold text-dark"><i class="bi bi-grid-3x3-gap me-1 small text-secondary"></i>Mesa N/A</div>
+                    <div class="small text-muted text-capitalize">(No asignada)</div>
+                `;
+            }
 
             // Filtros
             const coincideTexto = textoBusqueda === '' ||
@@ -90,8 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="text-nowrap small text-muted">${reserva.hora}</td>
                     <td class="text-center font-monospace fw-bold">${reserva.personas}</td>
                     <td>
-                        <div class="fw-bold text-dark"><i class="bi bi-grid-3x3-gap me-1 small text-secondary"></i>Mesa ${numeroMesa}</div>
-                        <div class="small text-muted text-capitalize">${zonaPiso || 'No asignada'}</div>
+                        ${infoMesaHTML}
                     </td>
                     <td><span class="badge ${badgeClass}">${reserva.estado}</span></td>
                     <td class="text-end pe-3">${actionIconsHTML}</td>
@@ -304,45 +331,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función global para mostrar el resumen detallado en el Modal
     window.verResumenReserva = function (idReserva) {
-        // Buscamos la reserva seleccionada en nuestra lista local
         const reserva = listaReservas.find(r => r.id === idReserva);
         if (!reserva) return;
 
-        const nombre = reserva.cliente && reserva.cliente.nombre ? reserva.cliente.nombre : 'No registrado';
-        const telefono = reserva.cliente && reserva.cliente.telefono ? reserva.cliente.telefono : 'No registrado';
-        const correo = reserva.cliente && reserva.cliente.correo ? reserva.cliente.correo : 'No registrado';
-        const esCumple = reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí' ? 'Sí 🎉' : 'No';
+        const nombre = reserva.cliente?.nombre || 'No registrado';
+        const telefono = reserva.cliente?.telefono || 'No registrado';
+        const correo = reserva.cliente?.correo || 'No registrado';
+        const esCumple = (reserva.cumpleanos === 1 || reserva.cumpleanos === true || reserva.cumpleanos === 'Sí') ? 'Sí 🎉' : 'No';
+
+        // Lógica para determinar la Ubicación y Mesa (consistente con la tabla)
+        const esTerraza = reserva.tipoMesa === 'Terraza' || reserva.tipoMesa === 'terraza' || (reserva.tipo_zona && reserva.tipo_zona.toLowerCase() === 'terraza');
+
+        let infoMesaTexto = '';
+        let infoUbicacionTexto = '';
+
+        if (esTerraza) {
+            infoMesaTexto = '<span class="text-success fw-bold">Terraza (Área completa)</span>';
+            infoUbicacionTexto = 'Terraza';
+        } else {
+            const numMesa = reserva.numero_mesa || reserva.mesa || 'N/A';
+            const piso = reserva.piso ? ` - Piso ${reserva.piso}` : '';
+            infoMesaTexto = `<span class="fw-bold text-dark">Mesa ${numMesa}</span>`;
+            infoUbicacionTexto = `${reserva.tipo_zona || 'Mesa Normal'}${piso}`;
+        }
 
         const modalBody = document.getElementById('modalResumenBody');
 
-        // Plantilla HTML del resumen detallado (Diseño de tarjeta limpia)
         modalBody.innerHTML = `
         <div class="p-2">
             <div class="text-center mb-4">
                 <span class="fs-3 fw-bold text-primary">Reserva #${reserva.id}</span>
-                <p class="text-muted mb-0">Estado actual: <strong class="text-uppercase">${reserva.estado}</strong></p>
+                <p class="text-muted mb-0">Estado actual: <strong>${reserva.estado}</strong></p>
             </div>
             
             <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-person-fill me-2"></i>Datos del Cliente</h6>
             <div class="row mb-3 g-2">
                 <div class="col-4 text-muted">Nombre:</div><div class="col-8 fw-bold">${nombre}</div>
                 <div class="col-4 text-muted">Teléfono:</div><div class="col-8">${telefono}</div>
-                <div class="col-4 text-muted">Correo:</div><div class="col-8 text-break">${correo}</div>
             </div>
 
-            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Detalles de la Cita</h6>
+            <h6 class="text-secondary border-bottom pb-1 mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Detalles</h6>
             <div class="row g-2">
                 <div class="col-4 text-muted">Fecha:</div><div class="col-8 fw-bold">${reserva.fecha}</div>
                 <div class="col-4 text-muted">Hora:</div><div class="col-8 fw-bold">${reserva.hora}</div>
-                <div class="col-4 text-muted">Asistentes:</div><div class="col-8"><span class="badge bg-dark">${reserva.personas} personas</span></div>
-                <div class="col-4 text-muted">Mesa Asignada:</div><div class="col-8 fw-bold text-success">Mesa ${reserva.numero_mesa || 'N/A'}</div>
-                <div class="col-4 text-muted">Ubicación:</div><div class="col-8 text-capitalize">${reserva.zona || 'N/A'} - Piso ${reserva.piso || '1'}</div>
+                <div class="col-4 text-muted">Personas:</div><div class="col-8">${reserva.personas}</div>
+                <div class="col-4 text-muted">Mesa:</div><div class="col-8">${infoMesaTexto}</div>
+                <div class="col-4 text-muted">Zona:</div><div class="col-8 text-capitalize">${infoUbicacionTexto}</div>
                 <div class="col-4 text-muted">Cumpleaños:</div><div class="col-8">${esCumple}</div>
             </div>
         </div>
     `;
 
-        // Inicializamos y abrimos el modal de Bootstrap de manera nativa
         const miModal = new bootstrap.Modal(document.getElementById('modalResumen'));
         miModal.show();
     };
@@ -376,4 +415,3 @@ async function actualizarEstadoReserva(idReserva, nuevoEstado) {
         console.error("Error al conectar con el servidor:", error);
     }
 }
-
