@@ -103,99 +103,127 @@
 
                         <!-- Paso 2: Seleccionar mesa -->
                         <div class="wizard-step-content" id="step-2">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-primary text-white text-center py-3">
-                                    <h3 class="card-title mb-0">
-                                        <i class="bi bi-people me-2"></i>
-                                        Elige tu mesa
+                            <div class="card shadow-sm border-0 bg-transparent">
+                                <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+                                    <h3 class="card-title mb-0 fw-bold">
+                                        <i class="bi bi-cursor-fill me-2"></i> Elige tu mesa
                                     </h3>
                                 </div>
-                                <div class="card-body p-4">
-                                    <div class="personas-selector mb-4" id="personas-selector-block">
-                                        <h5 class="text-center mb-3">¿Cuántas personas?</h5>
-                                        <div class="d-flex justify-content-center gap-2 flex-wrap"
-                                            id="selector-personas">
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="1">1</button>
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="2">2</button>
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="4">4</button>
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="6">6</button>
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="8">8</button>
-                                            <button class="btn btn-outline-primary rounded-pill btn-persona"
-                                                data-cap="10">10</button>
+                                <div class="card-body p-4 bg-white rounded-bottom-4">
+
+                                    <div class="row g-4">
+
+                                        <div class="col-lg-4 col-md-5 d-flex flex-column gap-3">
+
+                                            <div class="personas-selector p-3 bg-light rounded-4 border d-flex flex-column justify-content-center flex-grow-1"
+                                                id="personas-selector-block">
+                                                <h5 class="text-center mb-3 fw-bold text-secondary">
+                                                    <i class="bi bi-people-fill me-2 text-primary"></i>¿Cuántas
+                                                    personas?
+                                                </h5>
+                                                <div class="d-flex justify-content-center gap-2 flex-wrap"
+                                                    id="selector-personas">
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="1">1</button>
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="2">2</button>
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="4">4</button>
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="6">6</button>
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="8">8</button>
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary rounded-pill btn-persona"
+                                                        data-cap="10">10</button>
+                                                </div>
+                                                <input type="hidden" id="cantidad-personas-elegida" value="">
+                                            </div>
+
+                                            <div class="piso-selector p-3 bg-light rounded-4 border d-flex flex-column justify-content-center flex-grow-1"
+                                                id="piso-selector-block">
+                                                <h5 class="text-center mb-3 fw-bold text-secondary">
+                                                    <i class="bi bi-building me-2 text-primary"></i>Selecciona el piso
+                                                </h5>
+                                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                                    <button type="button"
+                                                        class="btn btn-outline-secondary btn-piso active" id="piso-1"
+                                                        data-piso="1">Piso 1</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-piso"
+                                                        id="piso-2" data-piso="2">Piso 2</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-piso"
+                                                        id="piso-3" data-piso="3">Piso 3</button>
+                                                </div>
+                                            </div>
+
                                         </div>
-                                        <input type="hidden" id="cantidad-personas-elegida" value="">
+
+                                        <div class="col-lg-8 col-md-7">
+                                            <div class="mesas-container p-3 bg-light rounded-4 border h-100 d-flex flex-column justify-content-start"
+                                                id="mesas-disponibles-container">
+                                                <h5 class="text-center mb-4 fw-bold text-secondary">
+                                                    <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>Mesas
+                                                    disponibles
+                                                </h5>
+
+                                                <div class="d-flex flex-wrap justify-content-center gap-3 p-2 mx-auto"
+                                                    id="mapa-piso-1" style="max-width: 100%;">
+                                                    <button type="button" class="mesa" data-capacidad="2">1</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">2</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">3</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">4</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">5</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">6</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">7</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">8</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">9</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">10</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">11</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">12</button>
+                                                    <button type="button" class="mesa" data-capacidad="8">13</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">14</button>
+                                                    <button type="button" class="mesa" data-capacidad="2">15</button>
+                                                </div>
+
+                                                <div class="d-flex flex-wrap justify-content-center gap-3 p-2 mx-auto d-none"
+                                                    id="mapa-piso-2" style="max-width: 100%;">
+                                                    <button type="button" class="mesa" data-capacidad="6">16</button>
+                                                    <button type="button" class="mesa" data-capacidad="10">17</button>
+                                                    <button type="button" class="mesa" data-capacidad="6">18</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">19</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">20</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">21</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">22</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">23</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">24</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">25</button>
+                                                </div>
+
+                                                <div class="d-flex flex-wrap justify-content-center gap-3 p-2 mx-auto d-none"
+                                                    id="mapa-piso-3" style="max-width: 100%;">
+                                                    <button type="button" class="mesa" data-capacidad="10">26</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">27</button>
+                                                    <button type="button" class="mesa" data-capacidad="4">28</button>
+                                                    <button type="button" class="mesa" data-capacidad="8">29</button>
+                                                    <button type="button" class="mesa" data-capacidad="10">30</button>
+                                                    <button type="button" class="mesa" data-capacidad="8">31</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
-
-                                    <div class="piso-selector mb-4" id="piso-selector-block">
-                                        <h5 class="text-center mb-3">Selecciona el piso</h5>
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <button class="btn btn-outline-secondary btn-piso active" id="piso-1"
-                                                data-piso="1">Piso 1</button>
-                                            <button class="btn btn-outline-secondary btn-piso" id="piso-2"
-                                                data-piso="2">Piso 2</button>
-                                            <button class="btn btn-outline-secondary btn-piso" id="piso-3"
-                                                data-piso="3">Piso 3</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="mesas-container" id="mesas-disponibles-container">
-                                        <h5 class="text-center mb-3">Mesas disponibles</h5>
-
-                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto"
-                                            id="mapa-piso-1" style="max-width: 650px;">
-                                            <button type="button" class="mesa" data-capacidad="2">1</button>
-                                            <button type="button" class="mesa" data-capacidad="2">2</button>
-                                            <button type="button" class="mesa" data-capacidad="2">3</button>
-                                            <button type="button" class="mesa" data-capacidad="2">4</button>
-                                            <button type="button" class="mesa" data-capacidad="2">5</button>
-                                            <button type="button" class="mesa" data-capacidad="2">6</button>
-                                            <button type="button" class="mesa" data-capacidad="4">7</button>
-                                            <button type="button" class="mesa" data-capacidad="2">8</button>
-                                            <button type="button" class="mesa" data-capacidad="4">9</button>
-                                            <button type="button" class="mesa" data-capacidad="2">10</button>
-                                            <button type="button" class="mesa" data-capacidad="4">11</button>
-                                            <button type="button" class="mesa" data-capacidad="2">12</button>
-                                            <button type="button" class="mesa" data-capacidad="8">13</button>
-                                            <button type="button" class="mesa" data-capacidad="4">14</button>
-                                            <button type="button" class="mesa" data-capacidad="2">15</button>
-                                        </div>
-                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto d-none"
-                                            id="mapa-piso-2" style="max-width: 650px;">
-                                            <button type="button" class="mesa" data-capacidad="6">16</button>
-                                            <button type="button" class="mesa" data-capacidad="10">17</button>
-                                            <button type="button" class="mesa" data-capacidad="6">18</button>
-                                            <button type="button" class="mesa" data-capacidad="4">19</button>
-                                            <button type="button" class="mesa" data-capacidad="4">20</button>
-                                            <button type="button" class="mesa" data-capacidad="4">21</button>
-                                            <button type="button" class="mesa" data-capacidad="4">22</button>
-                                            <button type="button" class="mesa" data-capacidad="4">23</button>
-                                            <button type="button" class="mesa" data-capacidad="4">24</button>
-                                            <button type="button" class="mesa" data-capacidad="4">25</button>
-                                        </div>
-                                        <div class="d-flex flex-wrap justify-content-center gap-3 p-3 bg-light rounded-4 border mx-auto d-none"
-                                            id="mapa-piso-3" style="max-width: 650px;">
-                                            <button type="button" class="mesa" data-capacidad="10">26</button>
-                                            <button type="button" class="mesa" data-capacidad="4">27</button>
-                                            <button type="button" class="mesa" data-capacidad="4">28</button>
-                                            <button type="button" class="mesa" data-capacidad="8">29</button>
-                                            <button type="button" class="mesa" data-capacidad="10">30</button>
-                                            <button type="button" class="mesa" data-capacidad="8">31</button>
-                                        </div>
-                                    </div>
-
-                                    <div id="terraza-politicas" class="d-none">
-                                        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+                                    <div id="terraza-politicas" class="mt-4 d-none">
+                                        <div class="card border-0 rounded-4 shadow-sm p-4 mb-0 bg-light">
                                             <div class="d-flex justify-content-between align-items-center mb-4">
-                                                <h5 class="text-primary m-0">
+                                                <h5 class="text-primary m-0 fw-bold">
                                                     <i class="bi bi-info-circle me-2"></i> Políticas de reserva de
                                                     terraza
                                                 </h5>
-
                                                 <button type="button" class="btn btn-outline-primary btn-sm fw-bold"
                                                     data-bs-toggle="modal" data-bs-target="#modalImagenesTerraza">
                                                     <i class="bi bi-image me-1"></i> Ver fotos de la terraza
@@ -205,36 +233,36 @@
                                                 condiciones:</p>
                                             <ul class="list-group list-group-flush bg-transparent">
                                                 <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
+                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2 p-0">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
                                                     <div><strong>Máximo 16 personas:</strong> la terraza no admite más
                                                         de 16 personas.</div>
                                                 </li>
                                                 <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
+                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2 p-0">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
                                                     <div><strong>Pago anticipado:</strong> se debe abonar un anticipo
                                                         para bloquear la terraza.</div>
                                                 </li>
                                                 <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
+                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2 p-0">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
                                                     <div><strong>Pago total en 3 días:</strong> la reserva debe pagarse
                                                         por completo dentro de las 72 horas.</div>
                                                 </li>
                                                 <li
-                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2">
+                                                    class="list-group-item bg-transparent border-0 d-flex align-items-start mb-2 p-0">
                                                     <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
                                                     <div><strong>Cancelación automática:</strong> si no se liquida a
                                                         tiempo, el sistema liberará el espacio.</div>
                                                 </li>
                                             </ul>
-                                            <div class="alert alert-warning mt-4 small border-0 shadow-sm">
+                                            <div class="alert alert-warning mt-4 small border-0 shadow-sm mb-4">
                                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                                 Esta sección solo muestra las condiciones. No se realiza ningún cálculo
                                                 ni pago automático desde esta página.
                                             </div>
-                                            <div class="d-flex justify-content-start align-items-center mt-4">
+                                            <div class="d-flex justify-content-start align-items-center">
                                                 <div class="form-check mb-0">
                                                     <input class="form-check-input" type="checkbox"
                                                         id="checkbox-confirmar-terrace">
@@ -246,6 +274,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
