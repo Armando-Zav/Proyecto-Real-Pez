@@ -772,3 +772,8 @@ function deshabilitarTodasLasMesas(piso) {
         });
     }
 }
+
+document.getElementById('btnVolverPrincipal').addEventListener('click', function() {
+    // Cambia 'index.html' por la ruta exacta de tu pantalla principal de cara al cliente
+    window.location.href = 'index.html'; 
+});
