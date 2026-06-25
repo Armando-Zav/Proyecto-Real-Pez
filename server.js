@@ -20,25 +20,25 @@ const dbUrl = process.env.MYSQL_URL;
 // Configurar transportador de correo usando variables de entorno
 function createTransporter() {
     const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587; // 587 por defecto si falla
+    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 465; // Forzamos 465 por defecto
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
 
     if (!host || !user || !pass) {
-        console.warn('⚠️ SMTP no configurado completamente. Los emails no serán enviados. Revisa .env o Railway Variables.');
+        console.warn('SMTP no configurado completamente. Los emails no serán enviados. Revisa .env');
         return null;
     }
 
     return nodemailer.createTransport({
         host,
         port,
-        secure: port === 465, // Solo true si es explícitamente 465
+        secure: true, // TRUE porque usaremos el puerto 465 de forma nativa
         auth: {
             user,
             pass
         },
         tls: {
-            // Esto evita que el envío falle si hay discrepancias con los certificados del servidor virtual
+            // CRUCIAL: Esto le dice a Railway que confíe en el certificado de Gmail y no deje colgada la conexión
             rejectUnauthorized: false
         }
     });
@@ -141,21 +141,17 @@ app.post('/api/reservas', async (req, res) => {
         console.log(`Cliente: ${nombre}`);
         console.log(`==================================================\n`);
         // Enviar correo de confirmación en segundo plano (no bloquea la respuesta)
-        try {
-            await sendReservaEmail({
-                to: email,
-                nombre,
-                telefono,
-                fecha,
-                hora,
-                personas: personasBD,
-                mesa: numeroMesaBD,
-                tipoMesa,
-                codigo: codigoEstetico
-            });
-        } catch (err) {
-            console.error('Error en envío de correo (capturado en endpoint):', err);
-        }
+        sendReservaEmail({
+            to: email,
+            nombre,
+            telefono,
+            fecha,
+            hora,
+            personas: personasBD,
+            mesa: numeroMesaBD,
+            tipoMesa,
+            codigo: codigoEstetico
+        }).catch(err => console.error('Error en envío de correo (no crítico):', err));
 
         res.status(201).json({
             ok: true,
