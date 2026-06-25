@@ -141,17 +141,21 @@ app.post('/api/reservas', async (req, res) => {
         console.log(`Cliente: ${nombre}`);
         console.log(`==================================================\n`);
         // Enviar correo de confirmación en segundo plano (no bloquea la respuesta)
-        sendReservaEmail({
-            to: email,
-            nombre,
-            telefono,
-            fecha,
-            hora,
-            personas: personasBD,
-            mesa: numeroMesaBD,
-            tipoMesa,
-            codigo: codigoEstetico
-        }).catch(err => console.error('Error en envío de correo (no crítico):', err));
+        try {
+            await sendReservaEmail({
+                to: email,
+                nombre,
+                telefono,
+                fecha,
+                hora,
+                personas: personasBD,
+                mesa: numeroMesaBD,
+                tipoMesa,
+                codigo: codigoEstetico
+            });
+        } catch (err) {
+            console.error('Error en envío de correo (capturado en endpoint):', err);
+        }
 
         res.status(201).json({
             ok: true,
