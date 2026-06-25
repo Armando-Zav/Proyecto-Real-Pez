@@ -1,6 +1,7 @@
 require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
 const express = require('express');
 const mysql = require('mysql2');
+const nodemailer = require('nodemailer');
 const db = require('./conexion'); // Importamos la conexión a la base de datos
 const path = require('path');
 const app = express();
@@ -15,6 +16,62 @@ app.use(express.urlencoded({ extended: true }));
 // Servir los archivos estáticos directamente desde la raíz
 app.use(express.static(path.join(__dirname, './')));
 const dbUrl = process.env.MYSQL_URL;
+
+// Configurar transportador de correo usando variables de entorno
+function createTransporter() {
+    const host = process.env.SMTP_HOST;
+    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+
+    if (!host || !port || !user || !pass) {
+        console.warn('SMTP no configurado completamente. Los emails no serán enviados. Revisa .env');
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465, // true for 465, false for other ports
+        auth: {
+            user,
+            pass
+        }
+    });
+}
+
+const transporter = createTransporter();
+
+async function sendReservaEmail({ to, nombre, telefono, fecha, hora, personas, mesa, tipoMesa, codigo }) {
+    if (!transporter) return;
+
+    const from = process.env.EMAIL_FROM || process.env.SMTP_USER;
+    const asunto = `Confirmación de reserva ${codigo} - El Gran Pez`;
+    const html = `
+        <p>Hola <strong>${nombre}</strong>,</p>
+        <p>Gracias por reservar en <strong>El Gran Pez</strong>. Aquí tienes el resumen de tu reserva:</p>
+        <ul>
+            <li><strong>Código de reserva:</strong> ${codigo}</li>
+            <li><strong>Fecha:</strong> ${fecha}</li>
+            <li><strong>Hora:</strong> ${hora}</li>
+            <li><strong>Personas:</strong> ${personas}</li>
+            <li><strong>Mesa:</strong> ${mesa || 'N/A'}</li>
+            <li><strong>Tipo de mesa:</strong> ${tipoMesa}</li>
+            <li><strong>Teléfono:</strong> ${telefono}</li>
+        </ul>
+        <p><strong>Importante:</strong> Debes pagar anticipadamente para completar la reserva.</p>
+        <p><em>Nota:</em> Esta reserva es una <strong>prueba</strong> y no corresponde a una reserva real.</p>
+        <p>Si tienes alguna duda, responde a este correo o contáctanos vía WhatsApp.</p>
+        <p>Saludos,<br>El Gran Pez</p>
+    `;
+
+    try {
+        await transporter.sendMail({ from, to, subject: asunto, html });
+        console.log(`Correo de confirmación enviado a ${to}`);
+    } catch (err) {
+        console.error('Error enviando email de confirmación:', err);
+    }
+}
 
 // Ruta de prueba de conexión
 app.get('/probar-bd', async (req, res) => {
@@ -79,7 +136,19 @@ app.post('/api/reservas', async (req, res) => {
         console.log(`ID Real: ${result.insertId} -> Código: ${codigoEstetico}`);
         console.log(`Cliente: ${nombre}`);
         console.log(`==================================================\n`);
-        
+        // Enviar correo de confirmación en segundo plano (no bloquea la respuesta)
+        sendReservaEmail({
+            to: email,
+            nombre,
+            telefono,
+            fecha,
+            hora,
+            personas: personasBD,
+            mesa: numeroMesaBD,
+            tipoMesa,
+            codigo: codigoEstetico
+        }).catch(err => console.error('Error en envío de correo (no crítico):', err));
+
         res.status(201).json({
             ok: true,
             mensaje: 'Reserva procesada correctamente.',
