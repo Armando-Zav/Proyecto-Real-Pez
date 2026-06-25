@@ -20,22 +20,26 @@ const dbUrl = process.env.MYSQL_URL;
 // Configurar transportador de correo usando variables de entorno
 function createTransporter() {
     const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
+    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587; // 587 por defecto si falla
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
 
-    if (!host || !port || !user || !pass) {
-        console.warn('SMTP no configurado completamente. Los emails no serán enviados. Revisa .env');
+    if (!host || !user || !pass) {
+        console.warn('⚠️ SMTP no configurado completamente. Los emails no serán enviados. Revisa .env o Railway Variables.');
         return null;
     }
 
     return nodemailer.createTransport({
         host,
         port,
-        secure: port === 465, // true for 465, false for other ports
+        secure: port === 465, // Solo true si es explícitamente 465
         auth: {
             user,
             pass
+        },
+        tls: {
+            // Esto evita que el envío falle si hay discrepancias con los certificados del servidor virtual
+            rejectUnauthorized: false
         }
     });
 }
@@ -115,7 +119,7 @@ app.post('/api/reservas', async (req, res) => {
 
         // Conversión a tipos de datos compatibles con MySQL
         const esCumpleanosBD = (cumpleanos === 'Sí' || cumpleanos === true) ? 1 : 0;
-        const estadoBD = estado ? estado.toUpperCase() : 'PENDIENTE'; 
+        const estadoBD = estado ? estado.toUpperCase() : 'PENDIENTE';
 
         const queryInsert = `
             INSERT INTO reservas 
