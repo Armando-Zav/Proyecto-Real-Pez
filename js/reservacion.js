@@ -3,6 +3,8 @@
    ========================================================================== */
 let pasoActual = 1;
 let modalFecha; // Instancia global del modal de Bootstrap
+let modalPagoOpciones;
+let modalPagoDetalles;
 let currentDatePointer = new Date(); // Controla la navegación de meses
 
 let datosReserva = {
@@ -62,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
     inicializarWizard();
     inicializarSelectores();
     inicializarModalFecha();
+    inicializarModalesPago();
 
     // 2. Renderizar el nuevo calendario propio desde cero
     renderCustomCalendar();
@@ -352,6 +355,59 @@ function abrirModalFecha() {
         return;
     }
     modalFecha.show();
+}
+
+function inicializarModalesPago() {
+    const modalOpcionesEl = document.getElementById('modalPagoOpciones');
+    const modalDetallesEl = document.getElementById('modalPagoDetalles');
+
+    if (modalOpcionesEl) {
+        modalPagoOpciones = bootstrap.Modal.getOrCreateInstance(modalOpcionesEl);
+    }
+    if (modalDetallesEl) {
+        modalPagoDetalles = bootstrap.Modal.getOrCreateInstance(modalDetallesEl);
+    }
+
+    const btnPagarAhora = document.getElementById('btn-pagar-ahora');
+    const btnPagarMasTarde = document.getElementById('btn-pagar-mas-tarde');
+    const btnVolverPrincipalPago = document.getElementById('btn-volver-principal-pago');
+
+    if (btnPagarAhora) {
+        btnPagarAhora.addEventListener('click', function () {
+            mostrarModalPagoAhora();
+        });
+    }
+    if (btnPagarMasTarde) {
+        btnPagarMasTarde.addEventListener('click', function () {
+            if (modalPagoOpciones) modalPagoOpciones.hide();
+            volverPaginaPrincipal();
+        });
+    }
+    if (btnVolverPrincipalPago) {
+        btnVolverPrincipalPago.addEventListener('click', function () {
+            if (modalPagoDetalles) modalPagoDetalles.hide();
+            volverPaginaPrincipal();
+        });
+    }
+}
+
+function mostrarModalPagoOpciones() {
+    if (modalPagoOpciones) {
+        modalPagoOpciones.show();
+    }
+}
+
+function mostrarModalPagoAhora() {
+    if (modalPagoOpciones) {
+        modalPagoOpciones.hide();
+    }
+    if (modalPagoDetalles) {
+        modalPagoDetalles.show();
+    }
+}
+
+function volverPaginaPrincipal() {
+    window.location.href = 'index.html';
 }
 
 /* ==========================================================================
@@ -690,8 +746,8 @@ function finalizarReserva() {
             return response.json();
         })
         .then(data => {
-            mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito! Código: ${data.reserva.id}.`);
-            setTimeout(() => { window.location.href = 'index.html'; }, 4000);
+            mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito! Código: ${data.reserva.id}. Selecciona si deseas pagar ahora o más tarde.`);
+            mostrarModalPagoOpciones();
         })
         .catch(err => {
             console.error(err);

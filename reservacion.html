@@ -464,6 +464,61 @@
         </div>
     </div>
 
+    <!-- Modal de opciones de pago tras reservar -->
+    <div class="modal fade" id="modalPagoOpciones" tabindex="-1" aria-labelledby="modalPagoOpcionesLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPagoOpcionesLabel">Reserva completada</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tu reserva ya está registrada. ¿Quieres pagar ahora o prefieres hacerlo más tarde?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn-pagar-mas-tarde" class="btn btn-secondary">Más tarde</button>
+                    <button type="button" id="btn-pagar-ahora" class="btn btn-primary">Pagar ahora</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalles de pago -->
+    <div class="modal fade" id="modalPagoDetalles" tabindex="-1" aria-labelledby="modalPagoDetallesLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPagoDetallesLabel">Realiza tu pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Escanea el código QR con Yape o Plin para completar el pago. También puedes usar una de nuestras cuentas.</p>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-5 text-center">
+                            <img src="assets/img/qr-yape.PNG" alt="QR de pago" class="img-fluid rounded shadow-sm">
+                        </div>
+                        <div class="col-md-7">
+                            <h6 class="mb-2">Cuenta de pago</h6>
+                            <p class="mb-1"><strong>BCP:</strong> 123456789</p>
+                            <p class="mb-1"><strong>Interbank:</strong> 987654321</p>
+                            <p class="mb-1"><strong>Scotiabank:</strong> 555555555</p>
+                            <p class="small text-muted mt-3">Aceptamos pagos por Yape y Plin. Para verificar el pago, la cuenta debe estar a nombre de <strong>El Gran Pez</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mt-4">
+                        <strong>Importante:</strong> Si eliges pagar después, regresarás a la página principal y la reserva quedará registrada.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn-volver-principal-pago" class="btn btn-secondary">Volver a la página principal</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de imágenes de la terraza -->
     <div class="modal fade" id="modalImagenesTerraza" tabindex="-1" aria-labelledby="modalImagenesTerrazaLabel"
         aria-hidden="true">
