@@ -370,7 +370,6 @@ function inicializarModalesPago() {
 
     const btnPagarAhora = document.getElementById('btn-pagar-ahora');
     const btnPagarMasTarde = document.getElementById('btn-pagar-mas-tarde');
-    const btnVolverPrincipalPago = document.getElementById('btn-volver-principal-pago');
 
     if (btnPagarAhora) {
         btnPagarAhora.addEventListener('click', function () {
@@ -383,9 +382,9 @@ function inicializarModalesPago() {
             volverPaginaPrincipal();
         });
     }
-    if (btnVolverPrincipalPago) {
-        btnVolverPrincipalPago.addEventListener('click', function () {
-            if (modalPagoDetalles) modalPagoDetalles.hide();
+
+    if (modalDetallesEl) {
+        modalDetallesEl.addEventListener('hidden.bs.modal', function () {
             volverPaginaPrincipal();
         });
     }
@@ -736,6 +735,7 @@ function finalizarReserva() {
         btnConfirmar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...`;
     }
 
+    // REEMPLAZA EL BLOQUE FETCH DENTRO DE finalizarReserva() POR ESTE:
     fetch('/api/reservas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -743,15 +743,31 @@ function finalizarReserva() {
     })
         .then(response => {
             if (!response.ok) throw new Error('Error en el servidor.');
-            return response.json();
+            // CAPTURAMOS LA RESPUESTA COMO BLOB (ARCHIVO BINARIO)
+            return response.blob();
         })
-        .then(data => {
-            mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito! Código: ${data.reserva.id}. Selecciona si deseas pagar ahora o más tarde.`);
+        .then(blob => {
+            // 1. Crear un enlace temporal en la memoria del navegador
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // 2. Asignar el nombre del archivo de descarga
+            a.download = `Boleta_Reserva_${datosReserva.fecha}.pdf`;
+
+            // 3. Forzar el click de descarga de forma invisible y limpiar
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+            // 4. Mostrar el mensaje de éxito y abrir tus opciones de pago
+            mostrarMensajeConfirmacion('success', `¡Reserva registrada con éxito! Tu boleta en PDF se ha descargado automáticamente. Selecciona si deseas pagar ahora o más tarde.`);
             mostrarModalPagoOpciones();
         })
         .catch(err => {
             console.error(err);
-            mostrarMensajeConfirmacion('danger', 'Hubo un problema de conexión. Inténtalo de nuevo.');
+            mostrarMensajeConfirmacion('danger', 'Hubo un problema al registrar la reserva o generar el PDF. Inténtalo de nuevo.');
             if (btnConfirmar) {
                 btnConfirmar.disabled = false;
                 btnConfirmar.innerHTML = textoOriginalBtn;
@@ -829,7 +845,7 @@ function deshabilitarTodasLasMesas(piso) {
     }
 }
 
-document.getElementById('btnVolverPrincipal').addEventListener('click', function() {
+document.getElementById('btnVolverPrincipal').addEventListener('click', function () {
     // Cambia 'index.html' por la ruta exacta de tu pantalla principal de cara al cliente
-    window.location.href = 'index.html'; 
+    window.location.href = 'index.html';
 });

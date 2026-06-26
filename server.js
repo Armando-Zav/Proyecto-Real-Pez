@@ -1,12 +1,12 @@
 require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
 const express = require('express');
 const mysql = require('mysql2');
-const nodemailer = require('nodemailer');
 const db = require('./conexion'); // Importamos la conexión a la base de datos
 const path = require('path');
+const PDFDocument = require('pdfkit'); // 1. IMPORTAMOS PDFKIT
 const app = express();
 
-// CORRECCIÓN 1: Railway inyecta su propio puerto. Si no existe, usa 3000 localmente.
+// Railway inyecta su propio puerto. Si no existe, usa 3000 localmente.
 const PORT = process.env.PORT || 3000;
 
 // Middleware para entender formatos JSON
@@ -16,66 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 // Servir los archivos estáticos directamente desde la raíz
 app.use(express.static(path.join(__dirname, './')));
 const dbUrl = process.env.MYSQL_URL;
-
-// Configurar transportador de correo usando variables de entorno
-function createTransporter() {
-    const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 465; // Forzamos 465 por defecto
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-
-    if (!host || !user || !pass) {
-        console.warn('SMTP no configurado completamente. Los emails no serán enviados. Revisa .env');
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        host,
-        port,
-        secure: true, // TRUE porque usaremos el puerto 465 de forma nativa
-        auth: {
-            user,
-            pass
-        },
-        tls: {
-            // CRUCIAL: Esto le dice a Railway que confíe en el certificado de Gmail y no deje colgada la conexión
-            rejectUnauthorized: false
-        }
-    });
-}
-
-const transporter = createTransporter();
-
-async function sendReservaEmail({ to, nombre, telefono, fecha, hora, personas, mesa, tipoMesa, codigo }) {
-    if (!transporter) return;
-
-    const from = process.env.EMAIL_FROM || process.env.SMTP_USER;
-    const asunto = `Confirmación de reserva ${codigo} - El Gran Pez`;
-    const html = `
-        <p>Hola <strong>${nombre}</strong>,</p>
-        <p>Gracias por reservar en <strong>El Gran Pez</strong>. Aquí tienes el resumen de tu reserva:</p>
-        <ul>
-            <li><strong>Código de reserva:</strong> ${codigo}</li>
-            <li><strong>Fecha:</strong> ${fecha}</li>
-            <li><strong>Hora:</strong> ${hora}</li>
-            <li><strong>Personas:</strong> ${personas}</li>
-            <li><strong>Mesa:</strong> ${mesa || 'N/A'}</li>
-            <li><strong>Tipo de mesa:</strong> ${tipoMesa}</li>
-            <li><strong>Teléfono:</strong> ${telefono}</li>
-        </ul>
-        <p><strong>Importante:</strong> Debes pagar anticipadamente para completar la reserva.</p>
-        <p><em>Nota:</em> Esta reserva es una <strong>prueba</strong> y no corresponde a una reserva real.</p>
-        <p>Si tienes alguna duda, responde a este correo o contáctanos vía WhatsApp.</p>
-        <p>Saludos,<br>El Gran Pez</p>
-    `;
-
-    try {
-        await transporter.sendMail({ from, to, subject: asunto, html });
-        console.log(`Correo de confirmación enviado a ${to}`);
-    } catch (err) {
-        console.error('Error enviando email de confirmación:', err);
-    }
-}
 
 // Ruta de prueba de conexión
 app.get('/probar-bd', async (req, res) => {
@@ -97,8 +37,7 @@ app.get('/', (req, res) => {
 });
 
 // =========================================================================
-// ENDPOINT 1: CREAR RESERVA (POST) -> Guarda directamente en MySQL
-// CORRECCIÓN 2: Rutas POST unificadas con validaciones de seguridad
+// ENDPOINT 1: CREAR RESERVA (POST) -> Guarda en MySQL y Auto-Descarga PDF
 // =========================================================================
 app.post('/api/reservas', async (req, res) => {
     try {
@@ -138,46 +77,88 @@ app.post('/api/reservas', async (req, res) => {
         console.log(`\n==================================================`);
         console.log(`🐟 ¡Nueva Reserva Registrada en MySQL!`);
         console.log(`ID Real: ${result.insertId} -> Código: ${codigoEstetico}`);
-        console.log(`Cliente: ${nombre}`);
         console.log(`==================================================\n`);
-        // Enviar correo de confirmación en segundo plano (no bloquea la respuesta)
-        sendReservaEmail({
-            to: email,
-            nombre,
-            telefono,
-            fecha,
-            hora,
-            personas: personasBD,
-            mesa: numeroMesaBD,
-            tipoMesa,
-            codigo: codigoEstetico
-        }).catch(err => console.error('Error en envío de correo (no crítico):', err));
 
-        res.status(201).json({
-            ok: true,
-            mensaje: 'Reserva procesada correctamente.',
-            reserva: { id: codigoEstetico }
-        });
+        // =========================================================================
+        // GENERACIÓN DEL PDF CON PDFKIT DIRECTO AL FLUJO DE RESPUESTA HTTP (res)
+        // =========================================================================
+        
+        // 2. Modificamos las cabeceras HTTP de respuesta para forzar la descarga de un PDF
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Boleta_Reserva_${codigoEstetico}.pdf"`);
+
+        // 3. Inicializamos el documento PDF con tamaño adecuado para un ticket/boleta pequeña (A6)
+        const doc = new PDFDocument({ size: 'A6', margin: 15 });
+        
+        // Tubería del documento directo al stream de la respuesta express
+        doc.pipe(res);
+
+        // Estilo y cabecera de la Cevichería
+        doc.fillColor('#00539C').font('Helvetica-Bold').fontSize(14).text('CEVICHERÍA "CORAZÓN DE JESÚS"', { align: 'center' });
+        doc.font('Helvetica').fontSize(8).fillColor('#666666').text('¡Tu mesa frente al mar te espera!', { align: 'center' });
+        doc.moveDown(0.8);
+        
+        // Línea divisoria estética
+        doc.strokeColor('#cccccc').moveTo(15, doc.y).lineTo(280, doc.y).stroke();
+        doc.moveDown(0.8);
+
+        // Información de la reserva
+        doc.fillColor('#000000').font('Helvetica').fontSize(10).text(`Código: `, { continued: true });
+        doc.font('Helvetica-Bold').text(codigoEstetico);
+        doc.moveDown(0.4);
+        doc.fontSize(9).text(`Cliente: ${nombre}`);
+        doc.text(`Teléfono: ${telefono}`);
+        doc.text(`Correo: ${email}`);
+        doc.moveDown(0.4);
+        
+        doc.moveTo(15, doc.y).lineTo(280, doc.y).stroke('#eeeeee');
+        doc.moveDown(0.4);
+
+        // Detalles de Ubicación
+        doc.fontSize(10).fillColor('#00539C').text('Detalle de Reserva:', { bold: true });
+        doc.fontSize(9).fillColor('#000000');
+        doc.text(`Fecha: ${fecha}`);
+        doc.text(`Hora: ${hora} hrs`);
+        
+        if (tipoMesa === 'Terraza') {
+            doc.text(`Zona: Terraza Exclusiva`);
+            doc.text(`Comensales: 16 personas (Completa)`);
+        } else {
+            doc.text(`Zona: Salón - Piso ${pisoBD}`);
+            doc.text(`Mesa asignada: N° ${numeroMesaBD}`);
+            doc.text(`Comensales: ${personasBD} personas`);
+        }
+        
+        doc.text(`¿Cumpleaños?: ${esCumpleanosBD === 1 ? 'Sí 🎂' : 'No'}`);
+
+        doc.moveDown(0.8);
+        doc.moveTo(15, doc.y).lineTo(280, doc.y).stroke('#cccccc');
+        doc.moveDown(0.5);
+
+        // Políticas de tolerancia
+        doc.fontSize(7).fillColor('#cc0000').text('* Importante: Su mesa se reservará con un margen máximo de 15 minutos de tolerancia.', { align: 'center' });
+
+        // Finaliza la escritura en el stream enviándolo al navegador
+        doc.end();
 
     } catch (error) {
-        console.error('Error al insertar reserva en la BD:', error);
-        res.status(500).json({ ok: false, error: 'Error interno del servidor al resguardar la reserva.' });
+        console.error('Error al insertar reserva en la BD u obtener PDF:', error);
+        // Si hay un error previo a enviar las cabeceras, respondemos en JSON
+        if (!res.headersSent) {
+            res.status(500).json({ ok: false, error: 'Error interno del servidor al resguardar la reserva.' });
+        }
     }
 });
 
 // =========================================================================
-// ENDPOINT 2: LISTAR RESERVAS (GET) -> Lee desde MySQL y formatea para el Dashboard
-// CORRECCIÓN 3: Eliminada la ruta duplicada que crasheaba el servidor con "pool.query"
+// ENDPOINT 2: LISTAR RESERVAS (GET)
 // =========================================================================
 app.get('/api/reservas', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM reservas ORDER BY id DESC');
 
-        // Mapeamos los registros de la BD al formato JSON exacto que tu frontend ya conoce
         const reservasMapeadas = rows.map(row => {
-            // Formatear la hora de HH:MM:SS a HH:MM si viene como string largo
             const horaFormateada = row.hora_reserva ? String(row.hora_reserva).substring(0, 5) : "12:00";
-            // Formatear la fecha a YYYY-MM-DD limpiando el huso horario
             const fechaFormateada = row.fecha_reserva ? new Date(row.fecha_reserva).toISOString().split('T')[0] : "";
 
             return {
@@ -190,7 +171,6 @@ app.get('/api/reservas', async (req, res) => {
                 mesa: row.numero_mesa,
                 numero_mesa: row.numero_mesa,
                 cumpleanos: row.es_cumpleanos ? 'Sí' : 'No',
-                // PENDIENTE -> Pendiente, CONFIRMADA -> Confirmada
                 estado: row.estado_actual.charAt(0) + row.estado_actual.slice(1).toLowerCase(),
                 cliente: {
                     nombre: row.nombre_cliente,
@@ -209,17 +189,15 @@ app.get('/api/reservas', async (req, res) => {
 });
 
 // =========================================================================
-// ENDPOINTS 3 Y 4: ACTUALIZAR ESTADO (PUT / PATCH)
-// CORRECCIÓN 4: Se dejó una sola ruta PUT para evitar conflictos
+// ENDPOINTS 3 Y 4: ACTUALIZAR ESTADO (PUT)
 // =========================================================================
 app.put('/api/reservas/:id/estado', async (req, res) => {
     try {
-        const { id } = req.params; // Viene como "R-005"
-        const { estado } = req.body; // Viene como "Confirmada" o "Cancelada"
+        const { id } = req.params; 
+        const { estado } = req.body; 
 
-        // Convertimos el código estético "R-005" al ID entero de la BD (5)
         const idNumerico = parseInt(id.replace('R-', ''), 10);
-        const estadoBD = estado.toUpperCase(); // Cambia a 'CONFIRMADA' o 'CANCELADA'
+        const estadoBD = estado.toUpperCase(); 
 
         const [result] = await db.query('UPDATE reservas SET estado_actual = ? WHERE id = ?', [estadoBD, idNumerico]);
 
