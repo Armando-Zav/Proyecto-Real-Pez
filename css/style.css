@@ -34,7 +34,7 @@ body {
 
 /* Barra de navegación */
 .navbar {
-    background: linear-gradient(180deg, #031a35 0%, #022843 100%);;
+    background: linear-gradient(180deg, #031a35 0%, #022843 100%);
     padding: 10px 60px;
 }
 
@@ -43,7 +43,7 @@ body {
     width: auto;
 }
 
-ul {
+.navbar ul {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -51,7 +51,7 @@ ul {
     gap: 2rem;
 }
 
-ul a {
+.navbar ul a {
     text-decoration: none;
     color: var(--frosted-blue);
     padding: 10px 24px;
@@ -59,8 +59,8 @@ ul a {
     transition: color 0.25s ease, transform 0.25s ease;
 }
 
-ul a:hover,
-ul a:focus-visible {
+.navbar ul a:hover,
+.navbar ul a:focus-visible {
     color: var(--sky-aqua);
     transform: translateY(-1px);
 }
@@ -115,7 +115,6 @@ ul a:focus-visible {
 }
 
 .logo-original {
-    max-width: 500px;
     max-width: 420px;
     width: 100%;
     height: auto;
@@ -125,12 +124,12 @@ ul a:focus-visible {
 .avatar-circle {
     width: 45px;
     height: 45px;
-}
-
-.hero-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--bright-teal-blue), var(--blue-green));
 }
 
 .btn-custom {
@@ -168,13 +167,15 @@ ul a:focus-visible {
     background: rgba(255, 255, 255, 0.95);
 }
 
-.card img {
+.card > img,
+.card .card-img-top {
     object-fit: cover;
     height: 320px;
 }
 
 .card-body {
     padding: 1.6rem;
+    color: #495057;
 }
 
 .card-title {
@@ -193,22 +194,16 @@ ul a:focus-visible {
 
 /* Opiniones */
 
-.rounded-circle {
-    font-weight: bold;
-    font-size: 1rem;
-    background: linear-gradient(135deg, var(--bright-teal-blue), var(--blue-green));
-}
-
 /* Seccion mapa */
 
 .head-map {
-    background: linear-gradient(180deg, #031a35 0%, #022843 100%);;
+    background: linear-gradient(180deg, #031a35 0%, #022843 100%);
+    padding: 1.5rem 0;
 }
 
 section.container-fluid.p-0.mt-5.mb-6 {
     padding-bottom: 3rem;
 }
-
 
 .ratio iframe {
     filter: saturate(1.05) contrast(1.02);
