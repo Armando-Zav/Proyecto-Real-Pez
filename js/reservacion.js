@@ -88,7 +88,28 @@ document.addEventListener('DOMContentLoaded', function () {
             renderCustomCalendar();
         });
     }
+
+    // Sincronizar el calendario automáticamente cuando el mes real cambie
+    setInterval(() => {
+        sincronizarCalendarioConFechaActual();
+    }, 60 * 1000); // revisa cada minuto
 });
+
+function sincronizarCalendarioConFechaActual() {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const mesActual = hoy.getMonth();
+    const anioActual = hoy.getFullYear();
+
+    const mesMostrado = currentDatePointer.getMonth();
+    const anioMostrado = currentDatePointer.getFullYear();
+
+    if (anioMostrado < anioActual || (anioMostrado === anioActual && mesMostrado < mesActual)) {
+        currentDatePointer = new Date(hoy);
+        renderCustomCalendar();
+    }
+};
 
 /* ==========================================================================
     LÓGICA DEL CALENDARIO PROPIO (DOS MESES)
@@ -164,32 +185,27 @@ function buildMonthGrid(year, monthIndex, titleId, gridId) {
 
         // 2. Crear objeto Date para el día de la celda actual
         const fechaCelda = new Date(year, monthIndex, day);
+        const disponibilidadFecha = obtenerEstadoDisponibilidadFecha(fullDateStr);
 
-        // 3. CONTROL DE REGLA DE NEGOCIO: Bloquear hoy, fechas pasadas y fechas ya completas
+        // 3. CONTROL DE REGLA DE NEGOCIO: Bloquear hoy, fechas pasadas y fechas con distintos niveles de ocupación
         if (fechaCelda <= hoy) {
-            // Si el día es menor o igual a hoy, se bloquea visualmente
             dayCell.classList.add('day-cell', 'disabled-day');
-            // Al no tener addEventListener('click'), queda totalmente inerte
-        } else if (fechaEstaCompleta(fullDateStr)) {
+        } else if (disponibilidadFecha.clase === 'fully-booked-day') {
             dayCell.classList.add('day-cell', 'disabled-day', 'fully-booked-day');
             dayCell.title = 'Este día ya tiene las 3 reservas completas';
         } else {
-            // Si es de mañana en adelante y no está completo, el día es válido
-            dayCell.classList.add('day-cell');
+            dayCell.classList.add('day-cell', disponibilidadFecha.clase);
+            dayCell.title = `${disponibilidadFecha.texto}. Haz clic para ver horarios.`;
 
-            // Mantener pintado si coincide con la selección actual
             if (window.fechaSeleccionada === fullDateStr) {
                 dayCell.classList.add('selected-day');
             }
 
-            // Manejador de selección de celda (Solo activo para días permitidos)
             dayCell.addEventListener('click', function () {
                 document.querySelectorAll('.day-cell.selected-day').forEach(el => el.classList.remove('selected-day'));
                 this.classList.add('selected-day');
 
                 window.fechaSeleccionada = this.getAttribute('data-date');
-
-                // Abrir el modal de especificaciones directamente
                 abrirModalFecha();
             });
         }
@@ -204,6 +220,7 @@ async function cargarReservasExistentes() {
         if (!respuesta.ok) throw new Error('Error al obtener reservas del servidor.');
 
         reservasExistentes = await respuesta.json();
+        renderCustomCalendar();
         marcarFechasCompletas();
     } catch (error) {
         console.error('No se pudo cargar la disponibilidad de reservas:', error);
@@ -212,6 +229,22 @@ async function cargarReservasExistentes() {
 
 function getReservasPorFecha(fecha) {
     return reservasExistentes.filter(reserva => reserva.fecha === fecha);
+}
+
+function obtenerEstadoDisponibilidadFecha(fecha) {
+    const reservas = getReservasPorFecha(fecha).length;
+    const libres = Math.max(0, MAX_RESERVAS_POR_DIA - reservas);
+
+    if (libres === 3) {
+        return { clase: 'availability-3', texto: '3 horarios disponibles' };
+    }
+    if (libres === 2) {
+        return { clase: 'availability-2', texto: '2 horarios disponibles' };
+    }
+    if (libres === 1) {
+        return { clase: 'availability-1', texto: '1 horario disponible' };
+    }
+    return { clase: 'fully-booked-day', texto: 'Fecha completa' };
 }
 
 function getReservasPorFechaHora(fecha, hora) {
@@ -247,6 +280,7 @@ function marcarFechasCompletas() {
 
 function actualizarOpcionesHora(fecha) {
     const horaSelect = document.getElementById('input-hora');
+    const descripcion = document.getElementById('hora-disponibilidad-descripcion');
     if (!horaSelect || !fecha) return;
 
     const horasOcupadas = horasOcupadasEnFecha(fecha);
@@ -255,6 +289,23 @@ function actualizarOpcionesHora(fecha) {
     opciones.forEach(option => {
         option.disabled = horasOcupadas.includes(option.value);
     });
+
+    const horasLibres = HORARIOS_PERMITIDOS.filter(hora => !horasOcupadas.includes(hora));
+    const horasLibresList = document.getElementById('horas-libres-list');
+    const horasOcupadasList = document.getElementById('horas-ocupadas-list');
+    if (descripcion) {
+        if (horasLibres.length === 0) {
+            descripcion.classList.add('no-availability');
+        } else {
+            descripcion.classList.remove('no-availability');
+        }
+    }
+    if (horasLibresList) {
+        horasLibresList.innerText = horasLibres.length > 0 ? horasLibres.join(', ') : 'Ninguno';
+    }
+    if (horasOcupadasList) {
+        horasOcupadasList.innerText = horasOcupadas.length > 0 ? horasOcupadas.join(', ') : 'Ninguno';
+    }
 
     if (horasOcupadas.includes(horaSelect.value)) {
         const primeraHoraLibre = Array.from(opciones).find(option => !option.disabled);

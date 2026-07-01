@@ -57,6 +57,13 @@
                                     </button>
                                 </div>
 
+                                <div class="availability-legend mb-3">
+                                    <span class="legend-badge available-all-day">3 horarios disponibles</span>
+                                    <span class="legend-badge two-available-day">2 horarios disponibles</span>
+                                    <span class="legend-badge one-available-day">1 horario disponible</span>
+                                    <span class="legend-badge fully-booked">Fecha completa</span>
+                                </div>
+
                                 <div class="row g-4">
                                     <div class="col-md-6">
                                         <div class="p-3 bg-light rounded border">
@@ -434,6 +441,18 @@
                                 <option value="13:00">1:00 PM</option>
                                 <option value="14:00">2:00 PM</option>
                             </select>
+                            <div id="hora-disponibilidad-descripcion" class="mt-3">
+                                <div class="availability-summary">
+                                    <div class="availability-status availability-free">
+                                        <strong>Horarios libres:</strong>
+                                        <span id="horas-libres-list">Selecciona una fecha</span>
+                                    </div>
+                                    <div class="availability-status availability-booked">
+                                        <strong>Horarios ocupados:</strong>
+                                        <span id="horas-ocupadas-list">Selecciona una fecha</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Tipo de mesa</label>

@@ -236,6 +236,90 @@
     border: 1px solid #f5c2c7;
 }
 
+/* Disponibilidad parcial del día */
+.day-cell.availability-3 {
+    background-color: #e9f7ef !important;
+    color: #0f5132 !important;
+    border: 1px solid #badbcc;
+}
+.day-cell.availability-2 {
+    background-color: #fff3cd !important;
+    color: #664d03 !important;
+    border: 1px solid #ffecb5;
+}
+.day-cell.availability-1 {
+    background-color: #e2e3e5 !important;
+    color: #41464b !important;
+    border: 1px solid #d3d6d8;
+}
+
+.availability-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.legend-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.legend-badge.available-all-day {
+    background-color: #0d6efd;
+}
+.legend-badge.two-available-day {
+    background-color: #ffc107;
+    color: #212529;
+}
+.legend-badge.one-available-day {
+    background-color: #6c757d;
+}
+.legend-badge.fully-booked {
+    background-color: #dc3545;
+}
+
+.availability-summary {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.availability-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.92rem;
+}
+
+.availability-status strong {
+    min-width: 120px;
+}
+
+.availability-free {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.availability-booked {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.no-availability {
+    color: #842029;
+}
+
 /* ==========================================
    FULLCALENDAR OVERRIDES (SOPORTE LEGADO)
    ========================================== */
