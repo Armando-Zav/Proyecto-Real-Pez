@@ -1,6 +1,7 @@
 require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
 const express = require('express');
 const mysql = require('mysql2');
+const fs = require('fs');
 const db = require('./conexion'); // Importamos la conexión a la base de datos
 const path = require('path');
 const PDFDocument = require('pdfkit'); // 1. IMPORTAMOS PDFKIT
@@ -93,52 +94,68 @@ app.post('/api/reservas', async (req, res) => {
         // Tubería del documento directo al stream de la respuesta express
         doc.pipe(res);
 
-        // Estilo y cabecera de la Cevichería
-        doc.fillColor('#00539C').font('Helvetica-Bold').fontSize(14).text('CEVICHERÍA "CORAZÓN DE JESÚS"', { align: 'center' });
-        doc.font('Helvetica').fontSize(8).fillColor('#666666').text('¡Tu mesa frente al mar te espera!', { align: 'center' });
-        doc.moveDown(0.8);
-        
-        // Línea divisoria estética
-        doc.strokeColor('#cccccc').moveTo(15, doc.y).lineTo(280, doc.y).stroke();
-        doc.moveDown(0.8);
+        // Borde exterior para la boleta
+        const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+        const pageHeight = doc.page.height - doc.page.margins.top - doc.page.margins.bottom;
+        doc.lineWidth(0.8).strokeColor('#cfd8e3').rect(8, 8, pageWidth - 4, pageHeight - 4).stroke();
 
-        // Información de la reserva
-        doc.fillColor('#000000').font('Helvetica').fontSize(10).text(`Código: `, { continued: true });
-        doc.font('Helvetica-Bold').text(codigoEstetico);
-        doc.moveDown(0.4);
-        doc.fontSize(9).text(`Cliente: ${nombre}`);
-        doc.text(`Teléfono: ${telefono}`);
-        doc.text(`Correo: ${email}`);
-        doc.moveDown(0.4);
-        
-        doc.moveTo(15, doc.y).lineTo(280, doc.y).stroke('#eeeeee');
-        doc.moveDown(0.4);
-
-        // Detalles de Ubicación
-        doc.fontSize(10).fillColor('#00539C').text('Detalle de Reserva:', { bold: true });
-        doc.fontSize(9).fillColor('#000000');
-        doc.text(`Fecha: ${fecha}`);
-        doc.text(`Hora: ${hora} hrs`);
-        
-        if (tipoMesa === 'Terraza') {
-            doc.text(`Zona: Terraza Exclusiva`);
-            doc.text(`Comensales: 16 personas (Completa)`);
-        } else {
-            doc.text(`Zona: Salón - Piso ${pisoBD}`);
-            doc.text(`Mesa asignada: N° ${numeroMesaBD}`);
-            doc.text(`Comensales: ${personasBD} personas`);
+        // Cabecera profesional con logo
+        const logoPath = path.join(__dirname, 'assets', 'img', 'Logo_Pr.png');
+        if (fs.existsSync(logoPath)) {
+            doc.image(logoPath, 18, 18, { fit: [48, 48] });
         }
-        
-        doc.text(`¿Cumpleaños?: ${esCumpleanosBD === 1 ? 'Sí 🎂' : 'No'}`);
+        doc.fillColor('#0b5394').font('Helvetica-Bold').fontSize(14).text('EL GRAN PEZ', 75, 22, { continued: false });
+        doc.font('Helvetica').fontSize(8).fillColor('#555555').text('Cevichería y Marisquería', 75, 38);
+        doc.font('Helvetica').fontSize(7).fillColor('#555555').text('Lima, Perú • +51 999 888 777', 75, 50);
 
-        doc.moveDown(0.8);
-        doc.moveTo(15, doc.y).lineTo(280, doc.y).stroke('#cccccc');
-        doc.moveDown(0.5);
+        const fechaEmision = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        doc.fillColor('#0b5394').font('Helvetica-Bold').fontSize(10).text('BOLETA DE RESERVA', 18, 76);
+        doc.fillColor('#0b5394').font('Helvetica').fontSize(7).text(`Emisión: ${fechaEmision}`, 18, 88);
+        doc.fillColor('#0b5394').font('Helvetica').fontSize(7).text(`Estado: PENDIENTE`, 120, 88);
 
-        // Políticas de tolerancia
-        doc.fontSize(7).fillColor('#cc0000').text('* Importante: Su mesa se reservará con un margen máximo de 15 minutos de tolerancia.', { align: 'center' });
+        doc.fillColor('#0b5394').lineWidth(1).moveTo(18, 100).lineTo(278, 100).stroke();
 
-        // Finaliza la escritura en el stream enviándolo al navegador
+        // Datos de la reserva
+        let currentY = 108;
+        const boxWidth = 260;
+        doc.roundedRect(18, currentY, boxWidth, 60, 8).fill('#ffffff').stroke('#b9d4f2').lineWidth(0.8);
+        doc.fillColor('#0b5394').font('Helvetica-Bold').fontSize(8).text('Información del cliente', 26, currentY + 6);
+        doc.fillColor('#333333').font('Helvetica').fontSize(8).text(`Código: ${codigoEstetico}`, 26, currentY + 18);
+        doc.text(`Cliente: ${nombre}`, 26, currentY + 26);
+        doc.text(`Tel: ${telefono}`, 26, currentY + 34);
+        doc.text(`Email: ${email}`, 26, currentY + 42);
+
+        currentY += 72;
+        doc.roundedRect(18, currentY, boxWidth, 60, 8).fill('#f7fbff').stroke('#b9d4f2').lineWidth(0.8);
+        doc.fillColor('#0b5394').font('Helvetica-Bold').fontSize(8).text('Detalles de la reserva', 26, currentY + 6);
+        doc.fillColor('#333333').font('Helvetica').fontSize(8).text(`Fecha: ${fecha}`, 26, currentY + 18);
+        doc.text(`Hora: ${hora}`, 26, currentY + 26);
+        if (tipoMesa === 'Terraza') {
+            doc.text(`Zona: Terraza Exclusiva`, 26, currentY + 34);
+            doc.text(`Comensales: 16 personas`, 26, currentY + 42);
+        } else {
+            doc.text(`Zona: Salón - Piso ${pisoBD}`, 26, currentY + 34);
+            doc.text(`Mesa: N° ${numeroMesaBD}`, 26, currentY + 42);
+        }
+        doc.text(`Cumpleaños: ${esCumpleanosBD === 1 ? 'Sí 🎉' : 'No'}`, 26, currentY + 50);
+
+        currentY += 72;
+        const paymentHeight = 145;
+        doc.roundedRect(18, currentY, boxWidth, paymentHeight, 10).fill('#e8f4ff').stroke('#b9d4f2').lineWidth(0.8);
+        doc.fillColor('#0b5394').font('Helvetica-Bold').fontSize(8).text('Información de pago', 26, currentY + 8);
+        doc.fillColor('#000000').font('Helvetica').fontSize(7).text('Escanea el QR o paga por Yape / Plin al nombre:', 26, currentY + 20, { width: 130, lineGap: 1 });
+        doc.font('Helvetica-Bold').text('El Gran Pez', 26, currentY + 38, { width: 130 });
+        doc.font('Helvetica').text('Número: +51 999 888 777', 26, currentY + 46, { width: 130 });
+        doc.text('Transferencia bancaria:', 26, currentY + 56, { width: 130 });
+        doc.font('Helvetica-Bold').text('BCP: 123456789', 26, currentY + 66, { width: 130 });
+        doc.font('Helvetica-Bold').text('Interbank: 987654321', 26, currentY + 74, { width: 130 });
+        doc.font('Helvetica-Bold').text('Plin: 999 888 777', 26, currentY + 82, { width: 130 });
+        doc.font('Helvetica').fontSize(7).text('Verifica el nombre de cuenta antes de confirmar el pago.', 26, currentY + 92, { width: 130 });
+
+        const qrImagePath = path.join(__dirname, 'assets', 'img', 'qr-yape.PNG');
+        if (fs.existsSync(qrImagePath)) {
+            doc.image(qrImagePath, 165, currentY + 20, { fit: [75, 75] });
+        }
         doc.end();
 
     } catch (error) {
